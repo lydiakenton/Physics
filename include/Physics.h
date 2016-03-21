@@ -19,7 +19,7 @@ public:
     m_dynamicsWorld->setGravity(btVector3(_x,_y,_z));
   }
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
-  void addSphere(const std::string &_name, const ngl::Vec3 &_pos);
+  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void step(float _time, float _step);
   int getShape(unsigned int _index) const;
 

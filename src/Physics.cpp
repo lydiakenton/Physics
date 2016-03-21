@@ -1,4 +1,5 @@
 #include "Physics.h"
+#include "Shapes.h"
 #include <iostream>
 #include <ngl/Obj.h>
 #include <ngl/Quaternion.h>
@@ -27,10 +28,10 @@ Physics::~Physics()
 
 }
 
-void Physics::addSphere(const std::string & _name, const ngl::Vec3 &_pos)
+void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
 {
   //creating dynamic rigid body - sphere
-  btCollisionShape* colShape = new btSphereShape(1);
+  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName);
 
   //create dynamic objects
   btTransform startTransform;
@@ -38,10 +39,9 @@ void Physics::addSphere(const std::string & _name, const ngl::Vec3 &_pos)
 
   btScalar mass(1);
 
+  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   btVector3 inertia(0,0,0);
   colShape->calculateLocalInertia(mass,inertia);
-
-  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
 
   //motionstate provides interpolation capabilities
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
@@ -53,7 +53,7 @@ void Physics::addSphere(const std::string & _name, const ngl::Vec3 &_pos)
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body sphere;
-  sphere.name=_name;
+  sphere.name=_shapeName;
   sphere.body=rigidBody;
   m_bodies.push_back(sphere);
 }
@@ -64,20 +64,21 @@ void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
 
   btTransform groundTransform;
   groundTransform.setIdentity();
-  groundTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  //groundTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  {
+    btScalar mass(0);
+    btVector3 inertia(0,0,0);
 
-  btScalar mass(0);
-  btVector3 inertia(0,0,0);
+    btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
+    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
+    btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
 
-  btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
-  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body ground;
-  ground.name="groundPlane";
-  ground.body=rigidBody;
-  m_bodies.push_back(ground);
+    m_dynamicsWorld->addRigidBody(rigidBody);
+    Body ground;
+    ground.name="groundPlane";
+    ground.body=rigidBody;
+    m_bodies.push_back(ground);
+  }
 }
 
 ngl::Vec3 Physics::getPosition(unsigned int _index)
@@ -93,6 +94,14 @@ ngl::Vec3 Physics::getPosition(unsigned int _index)
                      transform.getOrigin().getZ());
   }
   else return ngl::Vec3();
+}
+
+int Physics::getShape(unsigned int _index) const
+{
+  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btCollisionShape *shape = obj->getCollisionShape();
+
+  return shape->getShapeType();
 }
 
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)

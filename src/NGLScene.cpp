@@ -11,6 +11,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
 #include "Physics.h"
+#include "Shapes.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -30,11 +31,13 @@ NGLScene::NGLScene()
   m_spinYFace=0.0f;
   setTitle("Physics Practise");
   m_animate=true;
-  m_physics= new Physics();
+  m_physics=new Physics();
   m_physics->setGravity(0,-10,0);
   m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
-  addSphere();
+  Shapes *shapes=Shapes::instance();
+
+  shapes->addSphere("sphere",1.0f);
 
   m_width=1024;
   m_height=720;
@@ -44,11 +47,6 @@ NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
   delete m_physics;
-}
-
-void NGLScene::addSphere()
-{
-  m_physics->addSphere("sphere",ngl::Vec3(0,50,0));
 }
 
 void NGLScene::resizeGL(QResizeEvent *_event)
@@ -64,6 +62,11 @@ void NGLScene::resizeGL(int _w , int _h)
   m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
+}
+
+void NGLScene::addSphere()
+{
+  m_physics->addSphere("sphere",50);
 }
 
 void NGLScene::initializeGL()
@@ -135,10 +138,9 @@ void NGLScene::initializeGL()
 
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createLineGrid("plane",50,50,40);
+  prim->createSphere("sphere",1.0,40);
 
   startTimer(10);
-  prim->createSphere("sphere",0.5f,40);
-
   glViewport(0,0,width(),height());
 }
 
