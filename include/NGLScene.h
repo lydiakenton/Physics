@@ -4,8 +4,13 @@
 #include <ngl/Camera.h>
 #include <ngl/Colour.h>
 #include <ngl/Light.h>
+#include <ngl/Transformation.h>
 #include <ngl/Text.h>
+#include <ngl/Obj.h>
+#include <btBulletDynamicsCommon.h>
 #include <QOpenGLWindow>
+#include <QElapsedTimer>
+#include <memory>
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -18,6 +23,8 @@
 /// @brief our main glwindow widget for NGL applications all drawing elements are
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
+
+class Physics;
 
 class NGLScene : public QOpenGLWindow
 {
@@ -49,7 +56,16 @@ class NGLScene : public QOpenGLWindow
     // Qt 5.x uses this instead! http://doc.qt.io/qt-5/qopenglwindow.html#resizeGL
     void resizeGL(int _w, int _h);
 
+    void resetSim();
+    void stepAnimation();
+    void addSphere();
+
+    Physics *getPhysics() {return m_physics;}
+
 private:
+    float m_x;
+    float m_y;
+    float m_z;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the x rotation mouse value
     //----------------------------------------------------------------------------------------------------------------------
@@ -90,6 +106,8 @@ private:
     /// @brief window height
     //----------------------------------------------------------------------------------------------------------------------
     int m_height;
+
+    ngl::Mat4 m_bodyTransform;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
     //----------------------------------------------------------------------------------------------------------------------
@@ -136,6 +154,12 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     void wheelEvent( QWheelEvent *_event);
 
+    bool m_animate;
+
+
+    Physics *m_physics;
+
+    void timerEvent(QTimerEvent *);
 
 };
 

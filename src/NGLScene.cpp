@@ -4,10 +4,13 @@
 #include "NGLScene.h"
 #include <ngl/Camera.h>
 #include <ngl/Light.h>
+#include <ngl/Transformation.h>
 #include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
+#include <ngl/Quaternion.h>
+#include "Physics.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -25,13 +28,27 @@ NGLScene::NGLScene()
   // mouse rotation values set to 0
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
-  setTitle("Qt5 Simple NGL Demo");
-}
+  setTitle("Physics Practise");
+  m_animate=true;
+  m_physics= new Physics();
+  m_physics->setGravity(0,-10,0);
+  m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
+  addSphere();
+
+  m_width=1024;
+  m_height=720;
+}
 
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
+  delete m_physics;
+}
+
+void NGLScene::addSphere()
+{
+  m_physics->addSphere("sphere",ngl::Vec3(0,50,0));
 }
 
 void NGLScene::resizeGL(QResizeEvent *_event)
@@ -54,7 +71,7 @@ void NGLScene::initializeGL()
   // we must call that first before any other GL commands to load and link the
   // gl commands from the lib, if that is not done program will crash
   ngl::NGLInit::instance();
-  glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
+  glClearColor(0.6f, 0.6f, 0.6f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
@@ -89,13 +106,13 @@ void NGLScene::initializeGL()
   // and make it active ready to load values
   (*shader)["Phong"]->use();
   // the shader will use the currently active material and light0 so set them
-  ngl::Material m(ngl::STDMAT::GOLD);
+  ngl::Material m(ngl::STDMAT::CHROME);
   // load our material values to the shader into the structure material (see Vertex shader)
   m.loadToShader("material");
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,1,1);
+  ngl::Vec3 from(0.0f,0.0f,20.0f);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
@@ -115,6 +132,14 @@ void NGLScene::initializeGL()
   light.loadToShader("light");
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
+
+  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
+  prim->createLineGrid("plane",50,50,40);
+
+  startTimer(10);
+  prim->createSphere("sphere",0.5f,40);
+
+  glViewport(0,0,width(),height());
 }
 
 
@@ -127,7 +152,7 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
-  MV=  M*m_cam.getViewMatrix();
+  MV=  m_bodyTransform*M*m_cam.getViewMatrix();
   MVP= M*m_cam.getVPMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
@@ -162,10 +187,35 @@ void NGLScene::paintGL()
 
    // get the VBO instance and draw the built in teapot
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-  // draw
-  loadMatricesToShader();
-  prim->draw("teapot");
 
+  // draw
+
+  //m_bodyTransform = ngl::Mat4();
+
+  unsigned int bodies = m_physics->getNumCollisionObjects();
+  for(unsigned int i=1; i<bodies; i++)
+  {
+    m_bodyTransform = m_physics->getTransformMatrix(i);
+
+    std::cout << "getting matrix 2: "<<std::endl;
+    //float matrix[16];
+    for(int j=0; j<4; j++)
+    {
+      for(int k=0; k<4; k++)
+      {
+        std::cout << m_bodyTransform.m_m[j][k]<< ", ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    //m_bodyTransform.identity();
+    loadMatricesToShader();
+    prim->draw("sphere");
+  }
+  m_bodyTransform.identity();
+  loadMatricesToShader();
+  prim->draw("plane");
 
 }
 
@@ -276,4 +326,25 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   // finally update the GLWindow and re-draw
   //if (isExposed())
     update();
+}
+
+void NGLScene::resetSim()
+{
+  m_physics->reset();
+}
+
+void NGLScene::timerEvent(QTimerEvent *_e)
+{
+    if(m_animate==true)
+    {
+      m_physics->step(1.0/60.0,10);
+    }
+    update();
+}
+
+void NGLScene::stepAnimation()
+{
+  std::cout<<"stepping animation"<<std::endl;
+  m_physics->step(1.0/20.0,10);
+
 }
