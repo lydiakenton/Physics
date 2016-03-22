@@ -11,7 +11,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
 #include "Physics.h"
-#include "Shapes.h"
+//#include "Shapes.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -35,11 +35,8 @@ NGLScene::NGLScene()
   m_physics->setGravity(0,-10,0);
   m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
-  Shapes *shapes=Shapes::instance();
-  shapes->addSphere("sphere",0.1f);
+  addSphere();
 
-  m_x=0.0f;
-  m_y=10.0f;
   m_width=1024;
   m_height=720;
 }
@@ -144,9 +141,6 @@ void NGLScene::initializeGL()
 
   startTimer(10);
   glViewport(0,0,width(),height());
-
-  Shapes *shapes=Shapes::instance();
-  addSphere();
 }
 
 
@@ -167,8 +161,6 @@ void NGLScene::loadMatricesToShader()
   shader->setShaderParamFromMat4("MVP",MVP);
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
   shader->setShaderParamFromMat4("M",M);
-  //shader->setRegisteredUniform("MVP",MVP);
-  //shader->setRegisteredUniform("normalMatrix", normalMatrix);
 }
 
 void NGLScene::paintGL()
@@ -194,12 +186,9 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-   // get the VBO instance and draw the built in teapot
+  //get the VBO instance to draw shapes
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   loadMatricesToShader();
-  // draw
-
-  //m_bodyTransform = ngl::Mat4();
 
   unsigned int bodies = m_physics->getNumCollisionObjects();
   std::cout << "bodies:" << bodies <<std::endl;
@@ -207,10 +196,8 @@ void NGLScene::paintGL()
   {
     m_bodyTransform = m_physics->getTransformMatrix(i);
     loadMatricesToShader();
-    m_physics->getColShape(i);
 
-    std::cout << "getting matrix 2: "<<std::endl;
-    //float matrix[16];
+    std::cout << "getting matrix: "<<std::endl;
     for(int j=0; j<4; j++)
     {
       for(int k=0; k<4; k++)
@@ -221,14 +208,12 @@ void NGLScene::paintGL()
     }
     std::cout << std::endl;
 
-    //m_bodyTransform.identity();
     loadMatricesToShader();
     prim->draw("sphere");
   }
-  m_bodyTransform.identity();
+  //m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
-
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -333,6 +318,8 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
+  // create sphere
+  case Qt::Key_1 : addSphere(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw

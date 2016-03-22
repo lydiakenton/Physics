@@ -22,14 +22,12 @@ public:
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void step(float _time, float _step);
-  int getColShape(unsigned int _index) const;
 
   inline unsigned int getNumCollisionObjects()const
   {
     return m_dynamicsWorld->getNumCollisionObjects();
   }
 
-  ngl::Vec3 getPosition(unsigned int _index);
   ngl::Mat4 getTransformMatrix(unsigned int _index);
 
 private:
