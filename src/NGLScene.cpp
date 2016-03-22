@@ -36,9 +36,10 @@ NGLScene::NGLScene()
   m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
   Shapes *shapes=Shapes::instance();
+  shapes->addSphere("sphere",0.1f);
 
-  shapes->addSphere("sphere",1.0f);
-
+  m_x=0.0f;
+  m_y=10.0f;
   m_width=1024;
   m_height=720;
 }
@@ -66,7 +67,7 @@ void NGLScene::resizeGL(int _w , int _h)
 
 void NGLScene::addSphere()
 {
-  m_physics->addSphere("sphere",50);
+  m_physics->addSphere("sphere", ngl::Vec3(0,5,0));
 }
 
 void NGLScene::initializeGL()
@@ -115,7 +116,7 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0.0f,0.0f,20.0f);
+  ngl::Vec3 from(0,0,20);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
@@ -124,6 +125,11 @@ void NGLScene::initializeGL()
   // The final two are near and far clipping planes of 0.5 and 10
   m_cam.setShape(45.0f,(float)720.0/576.0f,0.05f,350.0f);
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
+
+  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
+  prim->createLineGrid("plane",50,50,40);
+  prim->createSphere("sphere",0.1,40);
+
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
   // transformations
@@ -136,12 +142,11 @@ void NGLScene::initializeGL()
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
 
-  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
-  prim->createLineGrid("plane",50,50,40);
-  prim->createSphere("sphere",1.0,40);
-
   startTimer(10);
   glViewport(0,0,width(),height());
+
+  Shapes *shapes=Shapes::instance();
+  addSphere();
 }
 
 
@@ -155,13 +160,15 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
   MV=  m_bodyTransform*M*m_cam.getViewMatrix();
-  MVP= M*m_cam.getVPMatrix();
+  MVP= m_bodyTransform*M*m_cam.getVPMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MV",MV);
   shader->setShaderParamFromMat4("MVP",MVP);
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
   shader->setShaderParamFromMat4("M",M);
+  //shader->setRegisteredUniform("MVP",MVP);
+  //shader->setRegisteredUniform("normalMatrix", normalMatrix);
 }
 
 void NGLScene::paintGL()
@@ -189,15 +196,18 @@ void NGLScene::paintGL()
 
    // get the VBO instance and draw the built in teapot
   ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-
+  loadMatricesToShader();
   // draw
 
   //m_bodyTransform = ngl::Mat4();
 
   unsigned int bodies = m_physics->getNumCollisionObjects();
+  std::cout << "bodies:" << bodies <<std::endl;
   for(unsigned int i=1; i<bodies; i++)
   {
     m_bodyTransform = m_physics->getTransformMatrix(i);
+    loadMatricesToShader();
+    m_physics->getColShape(i);
 
     std::cout << "getting matrix 2: "<<std::endl;
     //float matrix[16];

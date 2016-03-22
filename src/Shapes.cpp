@@ -10,8 +10,11 @@ Shapes *Shapes::instance()
 
 void Shapes::addSphere(const std::string &_name, ngl::Real _rad)
 {
-  btCollisionShape* shape = new btSphereShape(btScalar(_rad/2.0));
+
+  btCollisionShape* shape = new btSphereShape(btScalar(_rad));
   m_shapes[_name].reset(shape);
+  //m_bodies.push_back(sphere);
+
 }
 
 btCollisionShape* Shapes::getShape(const std::string &_name)

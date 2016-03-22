@@ -12,6 +12,13 @@ uniform vec3 viewerPos;
 /// @brief the current fragment normal for the vert being processed
 out  vec3 fragmentNormal;
 
+struct Materials
+{
+  vec4 ambient;
+  vec4 diffuse;
+  vec4 specular;
+  float shininess;
+};
 
 struct Lights
 {

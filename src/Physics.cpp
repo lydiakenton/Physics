@@ -47,7 +47,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-  //rigidBody->setLinearVelocity(btVector3(0,1,0));
+  rigidBody->setLinearVelocity(btVector3(0,1,0));
 
   rigidBody->setActivationState(DISABLE_DEACTIVATION);
 
@@ -96,7 +96,7 @@ ngl::Vec3 Physics::getPosition(unsigned int _index)
   else return ngl::Vec3();
 }
 
-int Physics::getShape(unsigned int _index) const
+int Physics::getColShape(unsigned int _index) const
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btCollisionShape *shape = obj->getCollisionShape();

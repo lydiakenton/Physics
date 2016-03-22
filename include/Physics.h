@@ -5,6 +5,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <ngl/Vec3.h>
 #include <ngl/Mat4.h>
+#include <ngl/Obj.h>
 #include <memory>
 
 class Physics
@@ -21,7 +22,7 @@ public:
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void step(float _time, float _step);
-  int getShape(unsigned int _index) const;
+  int getColShape(unsigned int _index) const;
 
   inline unsigned int getNumCollisionObjects()const
   {
@@ -38,7 +39,7 @@ private:
     btRigidBody* body;
   }Body;
 
- btBroadphaseInterface* m_broadphase;
+ //btBroadphaseInterface* m_broadphase;
  std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
  std::unique_ptr<btCollisionShape> m_groundShape;
  std::unique_ptr<btSequentialImpulseConstraintSolver> m_solver;

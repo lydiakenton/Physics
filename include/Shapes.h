@@ -2,10 +2,11 @@
 #define SHAPES_H__
 
 #include <btBulletDynamicsCommon.h>
-#include <ngl/Types.h>
+#include <unordered_map>
 #include <memory>
 #include <string>
-#include <unordered_map>
+#include <ngl/Types.h>
+
 
 class Shapes
 {
@@ -18,6 +19,8 @@ public:
 private:
   Shapes(){}
 
+  Shapes(const Shapes &_c)=delete;
+  Shapes & operator=(const Shapes &_c)=delete;
   std::unordered_map < std::string,std::unique_ptr <btCollisionShape> >m_shapes;
 };
 
