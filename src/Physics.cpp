@@ -63,6 +63,30 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   m_bodies.push_back(s);
 }
 
+void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
+{
+  btCollisionShape* colShape = new btConeShape(btScalar(0.1), btScalar(0.3));
+
+  btTransform startTransform;
+  startTransform.setIdentity();
+  btScalar mass(2);
+
+  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  btVector3 inertia(0,0,0);
+  colShape->calculateLocalInertia(mass,inertia);
+
+  btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
+
+  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+
+  m_dynamicsWorld->addRigidBody(rigidBody);
+  Body s;
+  s.name=_shapeName;
+  s.body=rigidBody;
+  m_bodies.push_back(s);
+}
+
 void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
 {
   m_groundShape.reset(new btStaticPlaneShape(btVector3(0,1,0),_pos.m_y));

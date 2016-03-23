@@ -59,6 +59,7 @@ class NGLScene : public QOpenGLWindow
     void resetSim();
     void stepAnimation();
     void addSphere();
+    void addCone();
 
     Physics *getPhysics() {return m_physics;}
 

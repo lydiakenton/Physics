@@ -36,6 +36,7 @@ NGLScene::NGLScene()
   m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
   addSphere();
+  addCone();
 
   m_width=1024;
   m_height=720;
@@ -65,6 +66,11 @@ void NGLScene::resizeGL(int _w , int _h)
 void NGLScene::addSphere()
 {
   m_physics->addSphere("sphere", ngl::Vec3(0,5,0));
+}
+
+void NGLScene::addCone()
+{
+  m_physics->addCone("cone",ngl::Vec3(0,2,0));
 }
 
 void NGLScene::initializeGL()
@@ -113,19 +119,20 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,0,20);
+  ngl::Vec3 from(0,0,5);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
   m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45.0f,(float)720.0/576.0f,0.05f,350.0f);
+  m_cam.setShape(45.0f,(float)720.0/576.0f,0.5f,350.0f);
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createLineGrid("plane",50,50,40);
   prim->createSphere("sphere",0.1,40);
+  prim->createCone("cone",0.1,0.3,8,8);
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
@@ -211,7 +218,10 @@ void NGLScene::paintGL()
     loadMatricesToShader();
     prim->draw("sphere");
   }
-  //m_bodyTransform.identity();
+  loadMatricesToShader();
+  prim->draw("cone");
+
+  m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
 }
@@ -320,6 +330,8 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_N : showNormal(); break;
   // create sphere
   case Qt::Key_1 : addSphere(); break;
+  // create cone
+  case Qt::Key_2 : addCone(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw
