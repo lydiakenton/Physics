@@ -35,9 +35,6 @@ NGLScene::NGLScene()
   m_physics->setGravity(0,-10,0);
   m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
 
-  addSphere();
-  addCone();
-
   m_width=1024;
   m_height=720;
 }
@@ -70,7 +67,12 @@ void NGLScene::addSphere()
 
 void NGLScene::addCone()
 {
-  m_physics->addCone("cone",ngl::Vec3(0,2,0));
+  m_physics->addCone("cone",ngl::Vec3(0,5,0));
+}
+
+void NGLScene::addCube()
+{
+  m_physics->addCube("cube",ngl::Vec3(0,5,0));
 }
 
 void NGLScene::initializeGL()
@@ -132,7 +134,7 @@ void NGLScene::initializeGL()
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createLineGrid("plane",50,50,40);
   prim->createSphere("sphere",0.1,40);
-  prim->createCone("cone",0.1,0.3,8,8);
+  prim->createCone("cone",0.2,0.5,20,20);
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
@@ -215,12 +217,21 @@ void NGLScene::paintGL()
     }
     std::cout << std::endl;
 
-    loadMatricesToShader();
-    prim->draw("sphere");
-  }
-  loadMatricesToShader();
-  prim->draw("cone");
+    switch(m_physics->getCollisionShape(i))
+    {
+      case SPHERE_SHAPE_PROXYTYPE:
+        prim->draw("sphere");
+      break;
 
+      case CONE_SHAPE_PROXYTYPE:
+        prim->draw("cone");
+      break;
+
+      case BOX_SHAPE_PROXYTYPE:
+        prim->draw("cube");
+      break;
+    }
+  }
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
@@ -332,6 +343,8 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_1 : addSphere(); break;
   // create cone
   case Qt::Key_2 : addCone(); break;
+  //create box
+  case Qt::Key_3 : addCube(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw

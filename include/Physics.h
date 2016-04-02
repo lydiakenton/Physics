@@ -22,6 +22,7 @@ public:
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos);
+  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void step(float _time, float _step);
 
   inline unsigned int getNumCollisionObjects()const
@@ -29,6 +30,7 @@ public:
     return m_dynamicsWorld->getNumCollisionObjects();
   }
 
+  int getCollisionShape(unsigned int _index) const;
   ngl::Mat4 getTransformMatrix(unsigned int _index);
 
 private:
