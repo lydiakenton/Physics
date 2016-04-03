@@ -37,7 +37,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   btTransform startTransform;
   startTransform.setIdentity();
 
-  btScalar mass(1);
+  btScalar mass(2);
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   btVector3 inertia(0,0,0);
@@ -52,7 +52,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
-  rigidBody->setRollingFriction(btScalar(0.2));
+  rigidBody->setRollingFriction(btScalar(0.75f));
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -63,7 +63,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
 
 void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
 {
-  btCollisionShape* colShape = new btConeShape(btScalar(0.5), btScalar(0.32));
+  btCollisionShape* colShape = new btConeShape(btScalar(0.5f), btScalar(0.25f));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -75,8 +75,11 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
+  rigidBodyCI.m_friction=0.2f;
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+  rigidBody->setRestitution(0.3f);
+  rigidBody->setRollingFriction(0.25f);
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -85,24 +88,23 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
   m_bodies.push_back(s);
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos)
+void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass)
 {
   btCollisionShape* colShape = new btBoxShape(btVector3(0.5,0.5,0.5));
 
   btTransform startTransform;
   startTransform.setIdentity();
-  btScalar mass(0.5);
+  btScalar mass(_mass);
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   btVector3 inertia(0,0,0);
-  colShape->calculateLocalInertia(mass,inertia);
+  colShape->calculateLocalInertia(_mass,inertia);
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
-  rigidBodyCI.m_friction=0.9f;
-  rigidBodyCI.m_restitution=0.2f;
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+  rigidBody->setRestitution(0.5f);
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -124,7 +126,8 @@ void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
     btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-    rigidBodyCI.m_rollingFriction = 0.5f;
+    rigidBody->setRestitution(1.0f);
+    rigidBody->setRollingFriction(0.1f);
 
     m_dynamicsWorld->addRigidBody(rigidBody);
     Body s;
@@ -137,7 +140,7 @@ void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
 int Physics::getCollisionShape(unsigned int _index) const
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  btCollisionShape *collisionShape = obj->getCollisionShape();
+  btCollisionShape* collisionShape = obj->getCollisionShape();
 
   return collisionShape->getShapeType();
 }

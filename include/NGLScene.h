@@ -61,6 +61,7 @@ class NGLScene : public QOpenGLWindow
     void addSphere();
     void addCone();
     void addCube();
+    void addStaticCube();
 
     Physics *getPhysics() {return m_physics;}
 

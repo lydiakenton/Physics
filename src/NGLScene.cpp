@@ -11,6 +11,8 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
 #include "Physics.h"
+#include <ngl/Random.h>
+#include <stdlib.h>
 //#include "Shapes.h"
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -72,7 +74,19 @@ void NGLScene::addCone()
 
 void NGLScene::addCube()
 {
-  m_physics->addCube("cube",ngl::Vec3(0,5,0));
+  m_physics->addCube("cube",ngl::Vec3(0,5,0),btScalar(1.0f));
+}
+
+void NGLScene::addStaticCube()
+{
+  ngl::Random *rand=ngl::Random::instance();
+  ngl::Vec3 pos;
+  pos=rand->getRandomPoint(6,6,0);
+  for(unsigned int i=0; i<pos.length(); i++)
+  {
+    pos[i] = abs(pos[i]);
+  }
+  m_physics->addCube("staticCube",pos,btScalar(0.0f));
 }
 
 void NGLScene::initializeGL()
@@ -121,7 +135,7 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,0,5);
+  ngl::Vec3 from(0,0,20);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   // now load to our new camera
@@ -235,6 +249,7 @@ void NGLScene::paintGL()
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
+  prim->draw("staticCube");
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -343,8 +358,10 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_1 : addSphere(); break;
   // create cone
   case Qt::Key_2 : addCone(); break;
-  //create box
+  //create dynamic box
   case Qt::Key_3 : addCube(); break;
+  //create static box
+  case Qt::Key_4 : addStaticCube(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw
