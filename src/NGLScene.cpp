@@ -82,11 +82,17 @@ void NGLScene::addStaticCube()
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
   pos=rand->getRandomPoint(6,6,0);
-  for(unsigned int i=0; i<pos.length(); i++)
+  for(float i=0; i<pos.length(); i++)
   {
-    pos[i] = abs(pos[i]);
+    if(pos[i] != pos.m_x)
+    {
+      pos[i] = abs(pos[i]);
+      if(pos.m_y>0)
+      {
+        m_physics->addCube("staticCube",pos,btScalar(0.0f));
+      }
+    }
   }
-  m_physics->addCube("staticCube",pos,btScalar(0.0f));
 }
 
 void NGLScene::initializeGL()
@@ -245,12 +251,15 @@ void NGLScene::paintGL()
         prim->draw("cube");
       break;
     }
+    /*m_bodyTransform.scale(2.0f,0.2f,1.0f);
+    loadMatricesToShader();
+    prim->draw("cube");*/
   }
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
-  prim->draw("staticCube");
 }
+
 
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent (QMouseEvent * _event)
@@ -365,7 +374,6 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   default : break;
   }
   // finally update the GLWindow and re-draw
-  //if (isExposed())
     update();
 }
 
