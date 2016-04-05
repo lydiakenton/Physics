@@ -1,5 +1,6 @@
 #include <QMouseEvent>
 #include <QGuiApplication>
+#include <QFont>
 
 #include "NGLScene.h"
 #include <ngl/Camera.h>
@@ -64,17 +65,47 @@ void NGLScene::resizeGL(int _w , int _h)
 
 void NGLScene::addSphere()
 {
-  m_physics->addSphere("sphere", ngl::Vec3(0,5,0));
+  ngl::Random *rand=ngl::Random::instance();
+  ngl::Vec3 pos;
+  pos=rand->getRandomPoint(6,6,0);
+  for(int i=0; i<pos.length(); i++)
+  {
+    if(pos[i] != pos.m_x)
+    {
+      pos[i]=abs(pos[i]);
+    }
+  }
+  m_physics->addSphere("sphere", pos);
 }
 
 void NGLScene::addCone()
 {
-  m_physics->addCone("cone",ngl::Vec3(0,5,0));
+  ngl::Random *rand=ngl::Random::instance();
+  ngl::Vec3 pos;
+  pos=rand->getRandomPoint(6,6,0);
+  for(int i=0; i<pos.length(); i++)
+  {
+    if(pos[i] != pos.m_x)
+    {
+      pos[i]=abs(pos[i]);
+    }
+  }
+  m_physics->addCone("cone",pos);
 }
 
 void NGLScene::addCube()
 {
-  m_physics->addCube("cube",ngl::Vec3(0,5,0),btScalar(1.0f));
+  ngl::Random *rand=ngl::Random::instance();
+  ngl::Vec3 pos;
+  pos=rand->getRandomPoint(6,6,0);
+  for(int i=0; i<pos.length(); i++)
+  {
+    if(pos[i] != pos.m_x)
+    {
+      pos[i]=abs(pos[i]);
+    }
+  }
+  m_physics->addCube("cube",pos,btScalar(1.0f),ngl::Vec3(0.5f,0.5f,0.5f));
 }
 
 void NGLScene::addStaticCube()
@@ -82,14 +113,14 @@ void NGLScene::addStaticCube()
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
   pos=rand->getRandomPoint(6,6,0);
-  for(float i=0; i<pos.length(); i++)
+  for(int i=0; i<pos.length(); i++)
   {
     if(pos[i] != pos.m_x)
     {
       pos[i] = abs(pos[i]);
-      if(pos.m_y>0)
+      if(pos.m_y>2)
       {
-        m_physics->addCube("staticCube",pos,btScalar(0.0f));
+        m_physics->addCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
       }
     }
   }
@@ -168,6 +199,10 @@ void NGLScene::initializeGL()
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
 
+  //set up the text
+  m_text.reset(new ngl::Text(QFont ("Helvetica", 12)));
+  m_text->setScreenSize(width(),height());
+
   startTimer(10);
   glViewport(0,0,width(),height());
 }
@@ -197,6 +232,9 @@ void NGLScene::paintGL()
   glViewport(0,0,m_width,m_height);
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  m_text->setScreenSize(width(),height());
+  m_text->setTransform(m_x,m_y);
 
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
@@ -258,6 +296,36 @@ void NGLScene::paintGL()
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
+
+  m_text->setColour(ngl::Colour(1,1,1));
+  m_text->renderText(10,12,"Use keys 1-4 to create different shapes");
+  m_text->renderText(10,12*3,"Press C to clear the screen");
+  m_text->renderText(10,12*5,"Press Esc to exit");
+
+  QString text;
+  m_text->renderText(10,12*7, "Transformation Matrix: ");
+  //ngl::Vec3 textVar;
+
+  for(unsigned int i=1; i<bodies; i++)
+  {
+    m_bodyTransform = m_physics->getTransformMatrix(i);
+    loadMatricesToShader();
+
+    for(int j=0; j<4; j++)
+    {
+      for(int k=0; k<4; k++)
+      {
+        for(int x=10; x<236; x+=75)
+        {
+          for(int y=108; y<181; y+=24)
+          {
+            text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+            m_text->renderText(x,y,text);
+          }
+        }
+      }
+    }
+  }
 }
 
 
@@ -276,9 +344,8 @@ void NGLScene::mouseMoveEvent (QMouseEvent * _event)
     m_origX = _event->x();
     m_origY = _event->y();
     update();
-
   }
-        // right mouse translate code
+  // right mouse translate code
   else if(m_translate && _event->buttons() == Qt::RightButton)
   {
     int diffX = (int)(_event->x() - m_origXPos);
@@ -288,7 +355,6 @@ void NGLScene::mouseMoveEvent (QMouseEvent * _event)
     m_modelPos.m_x += INCREMENT * diffX;
     m_modelPos.m_y -= INCREMENT * diffY;
     update();
-
    }
 }
 
@@ -311,7 +377,6 @@ void NGLScene::mousePressEvent ( QMouseEvent * _event)
     m_origYPos = _event->y();
     m_translate=true;
   }
-
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -371,10 +436,12 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_3 : addCube(); break;
   //create static box
   case Qt::Key_4 : addStaticCube(); break;
+  //delete bodies in the window
+  case Qt::Key_C : m_physics->reset(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw
-    update();
+  update();
 }
 
 void NGLScene::resetSim()
@@ -384,16 +451,15 @@ void NGLScene::resetSim()
 
 void NGLScene::timerEvent(QTimerEvent *_e)
 {
-    if(m_animate==true)
+  if(m_animate==true)
     {
       m_physics->step(1.0/60.0,10);
     }
-    update();
+  update();
 }
 
 void NGLScene::stepAnimation()
 {
   std::cout<<"stepping animation"<<std::endl;
   m_physics->step(1.0/20.0,10);
-
 }

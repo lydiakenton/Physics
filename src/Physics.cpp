@@ -88,9 +88,9 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
   m_bodies.push_back(s);
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass)
+void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size)
 {
-  btCollisionShape* colShape = new btBoxShape(btVector3(0.5,0.5,0.5));
+  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
 
   btTransform startTransform;
   startTransform.setIdentity();

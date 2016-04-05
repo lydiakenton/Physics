@@ -22,7 +22,7 @@ public:
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos);
-  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass);
+  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size);
   void step(float _time, float _step);
 
   inline unsigned int getNumCollisionObjects()const
