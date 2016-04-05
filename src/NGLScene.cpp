@@ -301,11 +301,11 @@ void NGLScene::paintGL()
   m_text->renderText(10,12,"Use keys 1-4 to create different shapes");
   m_text->renderText(10,12*3,"Press C to clear the screen");
   m_text->renderText(10,12*5,"Press Esc to exit");
-
-  QString text;
   m_text->renderText(10,12*7, "Transformation Matrix: ");
-  //ngl::Vec3 textVar;
 
+  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
+  m_text->renderText(10,12*9,text2);
+  QString text;
   for(unsigned int i=1; i<bodies; i++)
   {
     m_bodyTransform = m_physics->getTransformMatrix(i);
@@ -315,19 +315,12 @@ void NGLScene::paintGL()
     {
       for(int k=0; k<4; k++)
       {
-        for(int x=10; x<236; x+=75)
-        {
-          for(int y=108; y<181; y+=24)
-          {
-            text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-            m_text->renderText(x,y,text);
-          }
-        }
-      }
-    }
+        text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+        m_text->renderText(10+(75*j),130+(24*k),text);
+       }
+     }
   }
 }
-
 
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent (QMouseEvent * _event)
@@ -437,7 +430,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   //create static box
   case Qt::Key_4 : addStaticCube(); break;
   //delete bodies in the window
-  case Qt::Key_C : m_physics->reset(); break;
+  case Qt::Key_C : resetSim(); break;
   default : break;
   }
   // finally update the GLWindow and re-draw
