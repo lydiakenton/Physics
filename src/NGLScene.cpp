@@ -118,11 +118,11 @@ void NGLScene::addStaticCube()
     if(pos[i] != pos.m_x)
     {
       pos[i] = abs(pos[i]);
-      if(pos.m_y>2)
-      {
-        m_physics->addCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
-      }
     }
+  }
+  if(pos.m_y>2)
+  {
+    m_physics->addCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
   }
 }
 
@@ -315,10 +315,24 @@ void NGLScene::paintGL()
     {
       for(int k=0; k<4; k++)
       {
-        text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-        m_text->renderText(10+(75*j),130+(24*k),text);
-       }
-     }
+      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+
+        if(i>=2)
+        {
+          glScissor(8,465,300,125);
+          glEnable(GL_SCISSOR_TEST);
+          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+          m_text->renderText(10+(75*j),130+(24*k),text);
+
+          glDisable(GL_SCISSOR_TEST);
+        }
+        else
+        {
+          m_text->renderText(10+(75*j),130+(24*k),text);
+        }
+      }
+    }
   }
 }
 
