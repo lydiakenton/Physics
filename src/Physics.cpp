@@ -94,7 +94,30 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
 
   btTransform startTransform;
   startTransform.setIdentity();
-  btScalar mass(_mass);
+
+  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  btVector3 inertia(0,0,0);
+  colShape->calculateLocalInertia(_mass,inertia);
+
+  btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
+
+  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+  rigidBody->setRestitution(0.5f);
+
+  m_dynamicsWorld->addRigidBody(rigidBody);
+  Body s;
+  s.name=_shapeName;
+  s.body=rigidBody;
+  m_bodies.push_back(s);
+}
+
+void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size)
+{
+  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
+
+  btTransform startTransform;
+  startTransform.setIdentity();
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   btVector3 inertia(0,0,0);
@@ -181,4 +204,20 @@ void Physics::reset()
     m_dynamicsWorld->removeRigidBody(m_bodies[i].body);
   }
   m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
+}
+
+bool Physics::isDynamic(unsigned int _index)
+{
+  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  obj->isKinematicObject();
+
+  return true;
+}
+
+bool Physics::isStatic(unsigned int _index)
+{
+  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  obj->isStaticObject();
+
+  return true;
 }

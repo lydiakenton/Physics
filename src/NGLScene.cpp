@@ -122,7 +122,7 @@ void NGLScene::addStaticCube()
   }
   if(pos.m_y>2)
   {
-    m_physics->addCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
+    m_physics->addStaticCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
   }
 }
 
@@ -200,7 +200,7 @@ void NGLScene::initializeGL()
   // set the viewport for openGL we need to take into account retina display
 
   //set up the text
-  m_text.reset(new ngl::Text(QFont ("Helvetica", 12)));
+  m_text = new ngl::Text(QFont ("Helvetica", 12));
   m_text->setScreenSize(width(),height());
 
   startTimer(10);
@@ -262,6 +262,7 @@ void NGLScene::paintGL()
   for(unsigned int i=1; i<bodies; i++)
   {
     m_bodyTransform = m_physics->getTransformMatrix(i);
+    m_physics->isStatic(i);
     loadMatricesToShader();
 
     std::cout << "getting matrix: "<<std::endl;
@@ -287,11 +288,12 @@ void NGLScene::paintGL()
 
       case BOX_SHAPE_PROXYTYPE:
         prim->draw("cube");
+
+        m_bodyTransform.scale(2.0f,0.2f,1.0f);
+        loadMatricesToShader();
+        prim->draw("cube");
       break;
     }
-    /*m_bodyTransform.scale(2.0f,0.2f,1.0f);
-    loadMatricesToShader();
-    prim->draw("cube");*/
   }
   m_bodyTransform.identity();
   loadMatricesToShader();
@@ -301,37 +303,20 @@ void NGLScene::paintGL()
   m_text->renderText(10,12,"Use keys 1-4 to create different shapes");
   m_text->renderText(10,12*3,"Press C to clear the screen");
   m_text->renderText(10,12*5,"Press Esc to exit");
-  m_text->renderText(10,12*7, "Transformation Matrix: ");
+  m_text->renderText(10,12*9, "Transformation Matrix: ");
 
   QString text2 = QString("Number of bodies: %2").arg(bodies-1);
-  m_text->renderText(10,12*9,text2);
+  m_text->renderText(10,12*7,text2);
+
+  m_bodyTransform = m_physics->getTransformMatrix(bodies-1);
   QString text;
-  for(unsigned int i=1; i<bodies; i++)
+
+  for(int j=0; j<4; j++)
   {
-    m_bodyTransform = m_physics->getTransformMatrix(i);
-    loadMatricesToShader();
-
-    for(int j=0; j<4; j++)
+    for(int k=0; k<4; k++)
     {
-      for(int k=0; k<4; k++)
-      {
       text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-
-        if(i>=2)
-        {
-          glScissor(8,465,300,125);
-          glEnable(GL_SCISSOR_TEST);
-          glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-          m_text->renderText(10+(75*j),130+(24*k),text);
-
-          glDisable(GL_SCISSOR_TEST);
-        }
-        else
-        {
-          m_text->renderText(10+(75*j),130+(24*k),text);
-        }
-      }
+      m_text->renderText(10+(75*j),130+(24*k),text);
     }
   }
 }

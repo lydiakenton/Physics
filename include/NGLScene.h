@@ -110,7 +110,7 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     int m_height;
 
-    std::unique_ptr <ngl::Text> m_text;
+    /*std::unique_ptr <*/ngl::Text/*>*/ *m_text;
 
     ngl::Mat4 m_bodyTransform;
     //ngl::Transformation m_transform;

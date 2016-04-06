@@ -23,6 +23,7 @@ public:
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos);
   void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size);
+  void addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size);
   void step(float _time, float _step);
 
   inline unsigned int getNumCollisionObjects()const
@@ -32,6 +33,9 @@ public:
 
   int getCollisionShape(unsigned int _index) const;
   ngl::Mat4 getTransformMatrix(unsigned int _index);
+
+  bool isDynamic(unsigned int _index);
+  bool isStatic(unsigned int _index);
 
 private:
   typedef struct
