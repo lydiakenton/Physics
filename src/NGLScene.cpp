@@ -122,7 +122,7 @@ void NGLScene::addStaticCube()
   }
   if(pos.m_y>2)
   {
-    m_physics->addStaticCube("staticCube",pos,ngl::Vec3(2.0f,0.2f,1.0f),true);
+    m_physics->addStaticCube("staticCube",pos,ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f),true);
   }
 }
 
