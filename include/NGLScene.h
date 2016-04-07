@@ -110,10 +110,9 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     int m_height;
 
-    /*std::unique_ptr <*/ngl::Text/*>*/ *m_text;
+    ngl::Text *m_text;
 
     ngl::Mat4 m_bodyTransform;
-    //ngl::Transformation m_transform;
 
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
@@ -162,7 +161,6 @@ private:
     void wheelEvent( QWheelEvent *_event);
 
     bool m_animate;
-
 
     Physics *m_physics;
 

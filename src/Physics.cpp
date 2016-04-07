@@ -28,7 +28,7 @@ Physics::~Physics()
 
 }
 
-void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
+void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
   //creating dynamic rigid body - sphere
   btCollisionShape* colShape = new btSphereShape(btScalar(0.1));
@@ -53,6 +53,10 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
   rigidBody->setRollingFriction(btScalar(0.75f));
+  if(_isStatic)
+  {
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+  }
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -61,7 +65,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos)
   m_bodies.push_back(s);
 }
 
-void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
+void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
   btCollisionShape* colShape = new btConeShape(btScalar(0.5f), btScalar(0.25f));
 
@@ -80,6 +84,10 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.3f);
   rigidBody->setRollingFriction(0.25f);
+  if(_isStatic)
+  {
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+  }
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -88,7 +96,7 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos)
   m_bodies.push_back(s);
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size)
+void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size, bool _isStatic)
 {
   btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
 
@@ -104,6 +112,10 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
+  if(_isStatic)
+  {
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+  }
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -112,7 +124,7 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
   m_bodies.push_back(s);
 }
 
-void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size)
+void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const ngl::Vec3 &_size, bool _isStatic)
 {
   btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
 
@@ -120,14 +132,18 @@ void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos
   startTransform.setIdentity();
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  btScalar mass(0);
   btVector3 inertia(0,0,0);
-  colShape->calculateLocalInertia(_mass,inertia);
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
+  if(_isStatic)
+  {
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+  }
 
   m_dynamicsWorld->addRigidBody(rigidBody);
   Body s;
@@ -168,6 +184,14 @@ int Physics::getCollisionShape(unsigned int _index) const
   return collisionShape->getShapeType();
 }
 
+int Physics::isStatic(unsigned int _index)
+{
+  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btRigidBody* rigidBody = btRigidBody::upcast(obj);
+
+  return rigidBody->isStaticObject();
+}
+
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
@@ -204,20 +228,4 @@ void Physics::reset()
     m_dynamicsWorld->removeRigidBody(m_bodies[i].body);
   }
   m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
-}
-
-bool Physics::isDynamic(unsigned int _index)
-{
-  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  obj->isKinematicObject();
-
-  return true;
-}
-
-bool Physics::isStatic(unsigned int _index)
-{
-  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  obj->isStaticObject();
-
-  return true;
 }

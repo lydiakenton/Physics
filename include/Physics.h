@@ -20,10 +20,10 @@ public:
     m_dynamicsWorld->setGravity(btVector3(_x,_y,_z));
   }
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
-  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos);
-  void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos);
-  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size);
-  void addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size);
+  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
+  void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
+  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size, bool _isStatic);
+  void addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const ngl::Vec3 &_size, bool _isStatic);
   void step(float _time, float _step);
 
   inline unsigned int getNumCollisionObjects()const
@@ -32,10 +32,8 @@ public:
   }
 
   int getCollisionShape(unsigned int _index) const;
+  int isStatic(unsigned int _index);
   ngl::Mat4 getTransformMatrix(unsigned int _index);
-
-  bool isDynamic(unsigned int _index);
-  bool isStatic(unsigned int _index);
 
 private:
   typedef struct

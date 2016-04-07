@@ -75,7 +75,7 @@ void NGLScene::addSphere()
       pos[i]=abs(pos[i]);
     }
   }
-  m_physics->addSphere("sphere", pos);
+  m_physics->addSphere("sphere", pos,false);
 }
 
 void NGLScene::addCone()
@@ -90,7 +90,7 @@ void NGLScene::addCone()
       pos[i]=abs(pos[i]);
     }
   }
-  m_physics->addCone("cone",pos);
+  m_physics->addCone("cone",pos,false);
 }
 
 void NGLScene::addCube()
@@ -105,7 +105,7 @@ void NGLScene::addCube()
       pos[i]=abs(pos[i]);
     }
   }
-  m_physics->addCube("cube",pos,btScalar(1.0f),ngl::Vec3(0.5f,0.5f,0.5f));
+  m_physics->addCube("cube",pos,btScalar(1.0f),ngl::Vec3(0.5f,0.5f,0.5f),false);
 }
 
 void NGLScene::addStaticCube()
@@ -122,7 +122,7 @@ void NGLScene::addStaticCube()
   }
   if(pos.m_y>2)
   {
-    m_physics->addStaticCube("staticCube",pos,btScalar(0.0f),ngl::Vec3(2.0f,0.2f,1.0f));
+    m_physics->addStaticCube("staticCube",pos,ngl::Vec3(2.0f,0.2f,1.0f),true);
   }
 }
 
@@ -262,7 +262,6 @@ void NGLScene::paintGL()
   for(unsigned int i=1; i<bodies; i++)
   {
     m_bodyTransform = m_physics->getTransformMatrix(i);
-    m_physics->isStatic(i);
     loadMatricesToShader();
 
     std::cout << "getting matrix: "<<std::endl;
@@ -276,25 +275,33 @@ void NGLScene::paintGL()
     }
     std::cout << std::endl;
 
-    switch(m_physics->getCollisionShape(i))
+    if((m_physics->isStatic(i))==1)
     {
-      case SPHERE_SHAPE_PROXYTYPE:
-        prim->draw("sphere");
-      break;
-
-      case CONE_SHAPE_PROXYTYPE:
-        prim->draw("cone");
-      break;
-
-      case BOX_SHAPE_PROXYTYPE:
-        prim->draw("cube");
-
-        m_bodyTransform.scale(2.0f,0.2f,1.0f);
-        loadMatricesToShader();
-        prim->draw("cube");
-      break;
+      m_bodyTransform.scale(2.0f,0.2f,1.0f);
+      loadMatricesToShader();
+      prim->draw("cube");
     }
+    else
+    {
+      switch(m_physics->getCollisionShape(i))
+      {
+        case SPHERE_SHAPE_PROXYTYPE:
+          prim->draw("sphere");
+        break;
+
+        case CONE_SHAPE_PROXYTYPE:
+          prim->draw("cone");
+        break;
+
+        case BOX_SHAPE_PROXYTYPE:
+          prim->draw("cube");
+        break;
+      }
+    }
+    std::cout << m_physics->isStatic(i) << std::endl;
   }
+
+
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
