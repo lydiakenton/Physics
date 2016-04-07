@@ -67,7 +67,7 @@ void NGLScene::addSphere()
 {
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6,6,0);
+  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
   for(int i=0; i<pos.length(); i++)
   {
     if(pos[i] != pos.m_x)
@@ -82,7 +82,7 @@ void NGLScene::addCone()
 {
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6,6,0);
+  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
   for(int i=0; i<pos.length(); i++)
   {
     if(pos[i] != pos.m_x)
@@ -97,7 +97,7 @@ void NGLScene::addCube()
 {
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6,6,0);
+  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
   for(int i=0; i<pos.length(); i++)
   {
     if(pos[i] != pos.m_x)
@@ -112,7 +112,7 @@ void NGLScene::addStaticCube()
 {
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6,6,0);
+  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
   for(int i=0; i<pos.length(); i++)
   {
     if(pos[i] != pos.m_x)
@@ -166,9 +166,10 @@ void NGLScene::initializeGL()
   // and make it active ready to load values
   (*shader)["Phong"]->use();
   // the shader will use the currently active material and light0 so set them
-  ngl::Material m(ngl::STDMAT::CHROME);
-  // load our material values to the shader into the structure material (see Vertex shader)
+
+  ngl::Material m(ngl::STDMAT::COPPER);
   m.loadToShader("material");
+
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
@@ -284,6 +285,7 @@ void NGLScene::paintGL()
     if((m_physics->isStatic(i))==1)
     {
       m_bodyTransform.scale(2.0f,0.2f,1.0f);
+      //shader->setRegisteredUniform("Colour",0.0f,0.0f,1.0f,1.0f);
       loadMatricesToShader();
       prim->draw("cube");
     }
@@ -296,6 +298,7 @@ void NGLScene::paintGL()
         break;
 
         case CONE_SHAPE_PROXYTYPE:
+          //shader->setRegisteredUniform("Colour",1.0f,0.0f,0.0f,1.0f);
           prim->draw("cone");
         break;
 
