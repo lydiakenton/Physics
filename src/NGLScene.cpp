@@ -14,7 +14,7 @@
 #include "Physics.h"
 #include <ngl/Random.h>
 #include <stdlib.h>
-//#include "Shapes.h"
+#include "Shapes.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -105,7 +105,7 @@ void NGLScene::addCube()
       pos[i]=abs(pos[i]);
     }
   }
-  m_physics->addCube("cube",pos,btScalar(1.0f),ngl::Vec3(0.5f,0.5f,0.5f),false);
+  m_physics->addCube("cube",pos,btScalar(1.0f),false);
 }
 
 void NGLScene::addStaticCube()
@@ -122,7 +122,7 @@ void NGLScene::addStaticCube()
   }
   if(pos.m_y>2)
   {
-    m_physics->addStaticCube("staticCube",pos,ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f),true);
+    m_physics->addStaticCube("staticCube",pos,true);
   }
 }
 
@@ -199,6 +199,12 @@ void NGLScene::initializeGL()
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
 
+  //add shapes from the shapes class
+  Shapes *shapes = Shapes::instance();
+  shapes->addSphere("sphere",0.1f);
+  shapes->addCone("cone",0.5f,0.25f);
+  shapes->addCube("cube",ngl::Vec3(0.5f,0.5f,0.5f));
+  shapes->addStaticCube("staticCube",ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f));
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
   m_text->setScreenSize(width(),height());

@@ -1,5 +1,5 @@
 #include "Physics.h"
-//#include "Shapes.h"
+#include "Shapes.h"
 #include <iostream>
 #include <ngl/Obj.h>
 #include <ngl/Quaternion.h>
@@ -31,7 +31,7 @@ Physics::~Physics()
 void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
   //creating dynamic rigid body - sphere
-  btCollisionShape* colShape = new btSphereShape(btScalar(0.1));
+  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName); //btScalar(0.1)
 
   //create dynamic objects
   btTransform startTransform;
@@ -67,7 +67,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, b
 
 void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
-  btCollisionShape* colShape = new btConeShape(btScalar(0.5f), btScalar(0.25f));
+  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName); //(btScalar(0.5f), btScalar(0.25f));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -96,9 +96,9 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool
   m_bodies.push_back(s);
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, const ngl::Vec3 &_size, bool _isStatic)
+void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic)
 {
-  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
+  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName); //(btVector3(_size.m_x, _size.m_y, _size.m_z));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -124,9 +124,9 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
   m_bodies.push_back(s);
 }
 
-void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const ngl::Vec3 &_size, bool _isStatic)
+void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
-  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x, _size.m_y, _size.m_z));
+  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName); //btVector3(_size.m_x, _size.m_y, _size.m_z));
 
   btTransform startTransform;
   startTransform.setIdentity();
