@@ -60,13 +60,13 @@ private:
 
 #endif
 
-
+/*
 class PhysicsLib : public ngl::Singleton<PhysicsLib>
 {
 friend class ngl::Singleton<PhysicsLib>;
 
 public :
-  int m_value;
+
 
 private :
   PhysicsLib();
@@ -76,3 +76,4 @@ private :
 
 
 PhysicsLib *physics = PhysicsLib::instance();
+*/

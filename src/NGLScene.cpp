@@ -324,7 +324,6 @@ void NGLScene::paintGL()
     std::cout << m_physics->isStatic(i) << std::endl;
   }
 
-
   m_bodyTransform.identity();
   loadMatricesToShader();
   prim->draw("plane");
