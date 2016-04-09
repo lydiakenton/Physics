@@ -8,6 +8,8 @@
 #include <ngl/Obj.h>
 #include <memory>
 
+#include <ngl/Singleton.h>
+
 class Physics
 {
 public:
@@ -57,3 +59,20 @@ private:
 
 
 #endif
+
+
+class PhysicsLib : public ngl::Singleton<PhysicsLib>
+{
+friend class ngl::Singleton<PhysicsLib>;
+
+public :
+  int m_value;
+
+private :
+  PhysicsLib();
+  ~PhysicsLib();
+
+};
+
+
+PhysicsLib *physics = PhysicsLib::instance();

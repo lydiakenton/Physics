@@ -182,7 +182,7 @@ void NGLScene::initializeGL()
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createLineGrid("plane",50.0f,50.0f,40.0f);
   prim->createSphere("sphere",0.1f,40.0f);
-  prim->createCone("cone",0.5f,1.0f,20.0f,20.0f);
+  prim->createCone("cone",0.5f,0.5f,20.0f,20.0f);
   prim->createCapsule("capsule",0.4f,0.8f,40.0f);
 
   // now create our light that is done after the camera so we can pass the
@@ -288,35 +288,31 @@ void NGLScene::paintGL()
     if((m_physics->isStatic(i))==1)
     {
       m_bodyTransform.scale(2.0f,0.2f,1.0f);
-      //shader->setRegisteredUniform("colour",0.0f,0.4f,0.8f,1.0f);
       loadMatricesToShader();
       prim->draw("cube");
     }
     else
     {
       ngl::Mat4 coneRotateMatrix;
+      ngl::Mat4 coneTranslateMatrix;
 
       switch(m_physics->getCollisionShape(i))
       {
         case SPHERE_SHAPE_PROXYTYPE:
-          //shader->setRegisteredUniform("colour",0.9f,0.0f,0.2f,1.0f);
           prim->draw("sphere");
         break;
 
         case CONE_SHAPE_PROXYTYPE:
-          //shader->setRegisteredUn
-
+          coneTranslateMatrix.translate(0.0f,0.0f,-0.25f);
           coneRotateMatrix.rotateX(-90);
-
           m_bodyTransform = coneRotateMatrix * m_bodyTransform;
+          m_bodyTransform = coneTranslateMatrix * m_bodyTransform;
           loadMatricesToShader();
 
           prim->draw("cone");
         break;
 
         case BOX_SHAPE_PROXYTYPE:
-          //shader->setRegisteredUniform("colour",0.5f,0.5f,0.0f,1.0f);
-
           prim->draw("cube");
         break;
 
@@ -341,7 +337,7 @@ void NGLScene::renderTextToScreen()
   unsigned int bodies = m_physics->getNumCollisionObjects();
 
   m_text->setColour(ngl::Colour(1,1,1));
-  m_text->renderText(10,12,"Use keys 1-4 to create different shapes");
+  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
   m_text->renderText(10,12*3,"Press C to clear the screen");
   m_text->renderText(10,12*5,"Press Esc to exit");
   m_text->renderText(10,12*9, "Transformation Matrix: ");

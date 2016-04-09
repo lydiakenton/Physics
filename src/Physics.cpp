@@ -168,7 +168,7 @@ void Physics::addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, 
   btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-  rigidBody->setRestitution(0.5f);
+  rigidBody->setRestitution(0.75f);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -194,7 +194,7 @@ void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
     btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
     btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
     btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-    rigidBody->setRestitution(1.0f);
+    rigidBody->setRestitution(0.75f);
     rigidBody->setRollingFriction(0.1f);
 
     m_dynamicsWorld->addRigidBody(rigidBody);
