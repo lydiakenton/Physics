@@ -1,5 +1,5 @@
 #include "Physics.h"
-#include "Shapes.h"
+#include "CollisionShape.h"
 #include <iostream>
 #include <ngl/Obj.h>
 #include <ngl/Quaternion.h>
@@ -31,7 +31,7 @@ Physics::~Physics()
 void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
   //creating dynamic rigid body - sphere
-  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
 
   //create dynamic objects
   btTransform startTransform;
@@ -67,7 +67,7 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, b
 
 void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
-  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
   btTransform startTransform;
   startTransform.setIdentity();
   btScalar mass(2);
@@ -97,7 +97,7 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool
 
 void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic)
 {
-  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -123,9 +123,9 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
   m_bodies.push_back(s);
 }
 
-void Physics::addStaticCube(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+void Physics::addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
 {
-  btCollisionShape* colShape = Shapes::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
 
   btTransform startTransform;
   startTransform.setIdentity();

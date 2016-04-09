@@ -18,11 +18,11 @@ CONFIG-=app_bundle
 SOURCES+= $$PWD/src/NGLScene.cpp    \
           $$PWD/src/main.cpp \
           $$PWD/src/Physics.cpp \
-          $$PWD/src/Shapes.cpp
+          $$PWD/src/CollisionShape.cpp
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
           $$PWD/include/Physics.h \
-          $$PWD/include/Shapes.h
+          $$PWD/include/CollisionShape.h
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH +=./include
 INCLUDEPATH+=/usr/local/include/bullet

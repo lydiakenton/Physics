@@ -14,7 +14,7 @@
 #include "Physics.h"
 #include <ngl/Random.h>
 #include <stdlib.h>
-#include "Shapes.h"
+#include "CollisionShape.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -32,7 +32,7 @@ NGLScene::NGLScene()
   // mouse rotation values set to 0
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
-  setTitle("Physics Practise");
+  setTitle("Simple Physics");
   m_animate=true;
   m_physics=new Physics();
   m_physics->setGravity(0,-10,0);
@@ -66,49 +66,34 @@ void NGLScene::resizeGL(int _w , int _h)
 void NGLScene::addSphere()
 {
   ngl::Random *rand=ngl::Random::instance();
-  ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
-  for(int i=0; i<pos.length(); i++)
-  {
-    if(pos[i] != pos.m_x)
-    {
-      pos[i]=abs(pos[i]);
-    }
-  }
+  ngl::Real _x;
+  _x=rand->randomNumber(10.0f);
+  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
+
   m_physics->addSphere("sphere", pos,false);
 }
 
 void NGLScene::addCone()
 {
   ngl::Random *rand=ngl::Random::instance();
-  ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
-  for(int i=0; i<pos.length(); i++)
-  {
-    if(pos[i] != pos.m_x)
-    {
-      pos[i]=abs(pos[i]);
-    }
-  }
-  m_physics->addCone("cone",pos,false);
+  ngl::Real _x;
+  _x=rand->randomNumber(10.0f);
+  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
+
+  m_physics->addCone("cone", pos,false);
 }
 
 void NGLScene::addCube()
 {
   ngl::Random *rand=ngl::Random::instance();
-  ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
-  for(int i=0; i<pos.length(); i++)
-  {
-    if(pos[i] != pos.m_x)
-    {
-      pos[i]=abs(pos[i]);
-    }
-  }
+  ngl::Real _x;
+  _x=rand->randomNumber(10.0f);
+  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
+
   m_physics->addCube("cube",pos,btScalar(1.0f),false);
 }
 
-void NGLScene::addStaticCube()
+void NGLScene::addPlatform()
 {
   ngl::Random *rand=ngl::Random::instance();
   ngl::Vec3 pos;
@@ -122,7 +107,7 @@ void NGLScene::addStaticCube()
   }
   if(pos.m_y>2)
   {
-    m_physics->addStaticCube("staticCube",pos,true);
+    m_physics->addPlatform("platform",pos,true);
   }
 }
 
@@ -169,6 +154,7 @@ void NGLScene::initializeGL()
 
   ngl::Material m(ngl::STDMAT::COPPER);
   m.loadToShader("material");
+  //shader->setShaderParam4f("colour",1,1,0,1);
 
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
@@ -184,9 +170,9 @@ void NGLScene::initializeGL()
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
-  prim->createLineGrid("plane",50,50,40);
-  prim->createSphere("sphere",0.1,40);
-  prim->createCone("cone",0.2,0.5,20,20);
+  prim->createLineGrid("plane",50.0f,50.0f,40.0f);
+  prim->createSphere("sphere",0.1f,40.0f);
+  prim->createCone("cone",(0.5f/2.0f),0.5f,20.0f,20.0f);
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
@@ -201,11 +187,11 @@ void NGLScene::initializeGL()
   // set the viewport for openGL we need to take into account retina display
 
   //add shapes from the shapes class
-  Shapes *shapes = Shapes::instance();
+  shape::CollisionShape *shapes = shape::CollisionShape::instance();
   shapes->addSphere("sphere",0.1f);
-  shapes->addCone("cone",0.5f,0.25f);
+  shapes->addCone("cone",0.5f,0.5f);
   shapes->addCube("cube",ngl::Vec3(0.5f,0.5f,0.5f));
-  shapes->addStaticCube("staticCube",ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f));
+  shapes->addPlatform("platform",ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f));
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
   m_text->setScreenSize(width(),height());
@@ -228,10 +214,14 @@ void NGLScene::loadMatricesToShader()
   MVP= m_bodyTransform*M*m_cam.getVPMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MV",MV);
+  /*shader->setShaderParamFromMat4("MV",MV);
   shader->setShaderParamFromMat4("MVP",MVP);
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  shader->setShaderParamFromMat4("M",M);
+  shader->setShaderParamFromMat4("M",M);*/
+  shader->setRegisteredUniform("MV",MV);
+  shader->setRegisteredUniform("MVP",MVP);
+  shader->setRegisteredUniform("normalMatrix",normalMatrix);
+  shader->setRegisteredUniform("M",M);
 }
 
 void NGLScene::paintGL()
@@ -285,7 +275,7 @@ void NGLScene::paintGL()
     if((m_physics->isStatic(i))==1)
     {
       m_bodyTransform.scale(2.0f,0.2f,1.0f);
-      //shader->setRegisteredUniform("Colour",0.0f,0.0f,1.0f,1.0f);
+      //shader->setRegisteredUniform("colour",0.0f,0.4f,0.8f,1.0f);
       loadMatricesToShader();
       prim->draw("cube");
     }
@@ -294,15 +284,17 @@ void NGLScene::paintGL()
       switch(m_physics->getCollisionShape(i))
       {
         case SPHERE_SHAPE_PROXYTYPE:
+          //shader->setRegisteredUniform("colour",0.9f,0.0f,0.2f,1.0f);
           prim->draw("sphere");
         break;
 
         case CONE_SHAPE_PROXYTYPE:
-          //shader->setRegisteredUniform("Colour",1.0f,0.0f,0.0f,1.0f);
+          //shader->setRegisteredUniform("colour",0.0f,0.9f,0.0f,1.0f);
           prim->draw("cone");
         break;
 
         case BOX_SHAPE_PROXYTYPE:
+          //shader->setRegisteredUniform("colour",0.5f,0.5f,0.0f,1.0f);
           prim->draw("cube");
         break;
       }
@@ -315,6 +307,13 @@ void NGLScene::paintGL()
   loadMatricesToShader();
   prim->draw("plane");
 
+  renderTextToScreen();
+}
+
+void NGLScene::renderTextToScreen()
+{
+  unsigned int bodies = m_physics->getNumCollisionObjects();
+
   m_text->setColour(ngl::Colour(1,1,1));
   m_text->renderText(10,12,"Use keys 1-4 to create different shapes");
   m_text->renderText(10,12*3,"Press C to clear the screen");
@@ -323,7 +322,6 @@ void NGLScene::paintGL()
 
   QString text2 = QString("Number of bodies: %2").arg(bodies-1);
   m_text->renderText(10,12*7,text2);
-
   m_bodyTransform = m_physics->getTransformMatrix(bodies-1);
   QString text;
 
@@ -443,7 +441,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   //create dynamic box
   case Qt::Key_3 : addCube(); break;
   //create static box
-  case Qt::Key_4 : addStaticCube(); break;
+  case Qt::Key_4 : addPlatform(); break;
   //delete bodies in the window
   case Qt::Key_C : resetSim(); break;
   default : break;
