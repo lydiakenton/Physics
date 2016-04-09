@@ -28,6 +28,12 @@ namespace shape
     m_shapes[_name].reset(cube);
   }
 
+  void CollisionShape::addCapsule(const std::string &_name, ngl::Real _rad, ngl::Real _height)
+  {
+    btCollisionShape* capsule = new btCapsuleShape(btScalar(_rad),btScalar(_height));
+    m_shapes[_name].reset(capsule);
+  }
+
   void CollisionShape::addPlatform(const std::string &_name, ngl::Vec3 _size)
   {
     btCollisionShape* platform = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));

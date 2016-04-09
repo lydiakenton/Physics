@@ -16,6 +16,7 @@ namespace shape
     void addSphere(const std::string &_name, ngl::Real _rad);
     void addCone(const std::string &_name, ngl::Real _rad, ngl::Real _height);
     void addCube(const std::string &_name, ngl::Vec3 _size);
+    void addCapsule(const std::string &_name, ngl::Real _rad, ngl::Real _height);
     void addPlatform(const std::string &_name, ngl::Vec3 _size);
 
     btCollisionShape* getShape(const std::string &_name);

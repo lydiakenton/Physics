@@ -73,6 +73,7 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool
   btScalar mass(2);
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  startTransform.setRotation(btQuaternion(btVector3(1,0,0),btScalar(ngl::PI/2)));
   btVector3 inertia(0,0,0);
   colShape->calculateLocalInertia(mass,inertia);
 
@@ -108,6 +109,35 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
+
+  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+  rigidBody->setRestitution(0.5f);
+  if(_isStatic)
+  {
+    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
+  }
+
+  m_dynamicsWorld->addRigidBody(rigidBody);
+  Body s;
+  s.name=_shapeName;
+  s.body=rigidBody;
+  m_bodies.push_back(s);
+}
+
+void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+{
+  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+
+  btTransform startTransform;
+  startTransform.setIdentity();
+  btScalar mass(1.0f);
+
+  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+  btVector3 inertia(0,0,0);
+  colShape->calculateLocalInertia(mass,inertia);
+
+  btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);

@@ -83,6 +83,16 @@ void NGLScene::addCone()
   m_physics->addCone("cone", pos,false);
 }
 
+void NGLScene::addCapsule()
+{
+  ngl::Random *rand=ngl::Random::instance();
+  ngl::Real _x;
+  _x=rand->randomNumber(10.0f);
+  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
+
+  m_physics->addCapsule("capsule", pos,false);
+}
+
 void NGLScene::addCube()
 {
   ngl::Random *rand=ngl::Random::instance();
@@ -172,7 +182,8 @@ void NGLScene::initializeGL()
   ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
   prim->createLineGrid("plane",50.0f,50.0f,40.0f);
   prim->createSphere("sphere",0.1f,40.0f);
-  prim->createCone("cone",(0.5f/2.0f),0.5f,20.0f,20.0f);
+  prim->createCone("cone",0.5f,1.0f,20.0f,20.0f);
+  prim->createCapsule("capsule",0.4f,0.8f,40.0f);
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
@@ -192,6 +203,7 @@ void NGLScene::initializeGL()
   shapes->addCone("cone",0.5f,0.5f);
   shapes->addCube("cube",ngl::Vec3(0.5f,0.5f,0.5f));
   shapes->addPlatform("platform",ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f));
+  shapes->addCapsule("capsule",0.4f,0.8f);
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
   m_text->setScreenSize(width(),height());
@@ -226,6 +238,7 @@ void NGLScene::loadMatricesToShader()
 
 void NGLScene::paintGL()
 {
+
   glViewport(0,0,m_width,m_height);
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -281,6 +294,8 @@ void NGLScene::paintGL()
     }
     else
     {
+      ngl::Mat4 coneRotateMatrix;
+
       switch(m_physics->getCollisionShape(i))
       {
         case SPHERE_SHAPE_PROXYTYPE:
@@ -289,13 +304,24 @@ void NGLScene::paintGL()
         break;
 
         case CONE_SHAPE_PROXYTYPE:
-          //shader->setRegisteredUniform("colour",0.0f,0.9f,0.0f,1.0f);
+          //shader->setRegisteredUn
+
+          coneRotateMatrix.rotateX(-90);
+
+          m_bodyTransform = coneRotateMatrix * m_bodyTransform;
+          loadMatricesToShader();
+
           prim->draw("cone");
         break;
 
         case BOX_SHAPE_PROXYTYPE:
           //shader->setRegisteredUniform("colour",0.5f,0.5f,0.0f,1.0f);
+
           prim->draw("cube");
+        break;
+
+        case CAPSULE_SHAPE_PROXYTYPE:
+          prim->draw("capsule");
         break;
       }
     }
@@ -440,8 +466,10 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_2 : addCone(); break;
   //create dynamic box
   case Qt::Key_3 : addCube(); break;
-  //create static box
-  case Qt::Key_4 : addPlatform(); break;
+  //create dynamic capsule
+  case Qt::Key_4 : addCapsule(); break;
+  //create static platform
+  case Qt::Key_5 : addPlatform(); break;
   //delete bodies in the window
   case Qt::Key_C : resetSim(); break;
   default : break;

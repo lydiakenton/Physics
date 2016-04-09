@@ -23,6 +23,7 @@ public:
   void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
   void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
   void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic);
+  void addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
   void addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
   void step(float _time, float _step);
 
