@@ -14,7 +14,7 @@
 #include "Physics.h"
 #include <ngl/Random.h>
 #include <stdlib.h>
-#include "CollisionShape.h"
+//#include "CollisionShape.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -70,7 +70,7 @@ void NGLScene::addSphere()
   _x=rand->randomNumber(10.0f);
   ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
 
-  m_physics->addSphere("sphere", pos,false);
+  m_physics->addSphere("sphere", pos,false,0.1f);
 }
 
 void NGLScene::addCone()
@@ -80,7 +80,7 @@ void NGLScene::addCone()
   _x=rand->randomNumber(10.0f);
   ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
 
-  m_physics->addCone("cone", pos,false);
+  m_physics->addCone("cone", pos,false,0.5f,0.5f);
 }
 
 void NGLScene::addCapsule()
@@ -90,7 +90,7 @@ void NGLScene::addCapsule()
   _x=rand->randomNumber(10.0f);
   ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
 
-  m_physics->addCapsule("capsule", pos,false);
+  m_physics->addCapsule("capsule", pos,false,0.4f,0.8f);
 }
 
 void NGLScene::addCube()
@@ -100,7 +100,7 @@ void NGLScene::addCube()
   _x=rand->randomNumber(10.0f);
   ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
 
-  m_physics->addCube("cube",pos,btScalar(1.0f),false);
+  m_physics->addCube("cube",pos,btScalar(1.0f),false,ngl::Vec3(0.5f,0.5f,0.5f));
 }
 
 void NGLScene::addPlatform()
@@ -117,7 +117,7 @@ void NGLScene::addPlatform()
   }
   if(pos.m_y>2)
   {
-    m_physics->addPlatform("platform",pos,true);
+    m_physics->addPlatform("platform",pos,true,ngl::Vec3(1.0f,0.1f,0.5f));
   }
 }
 
@@ -197,13 +197,6 @@ void NGLScene::initializeGL()
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
 
-  //add shapes from the shapes class
-  shape::CollisionShape *shapes = shape::CollisionShape::instance();
-  shapes->addSphere("sphere",0.1f);
-  shapes->addCone("cone",0.5f,0.5f);
-  shapes->addCube("cube",ngl::Vec3(0.5f,0.5f,0.5f));
-  shapes->addPlatform("platform",ngl::Vec3(2.0f/2.0f,0.2f/2.0f,1.0f/2.0f));
-  shapes->addCapsule("capsule",0.4f,0.8f);
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
   m_text->setScreenSize(width(),height());

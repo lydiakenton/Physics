@@ -8,8 +8,6 @@
 #include <ngl/Obj.h>
 #include <memory>
 
-#include <ngl/Singleton.h>
-
 class Physics
 {
 public:
@@ -22,14 +20,14 @@ public:
     m_dynamicsWorld->setGravity(btVector3(_x,_y,_z));
   }
   void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
-  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
-  void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
-  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic);
-  void addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
-  void addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic);
+  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad);
+  void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height);
+  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic, ngl::Vec3 _size);
+  void addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height);
+  void addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Vec3 _size);
   void step(float _time, float _step);
 
-  inline unsigned int getNumCollisionObjects()const
+  unsigned int getNumCollisionObjects()const
   {
     return m_dynamicsWorld->getNumCollisionObjects();
   }
@@ -45,7 +43,6 @@ private:
     btRigidBody* body;
   }Body;
 
- //btBroadphaseInterface* m_broadphase;
  std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
  std::unique_ptr<btCollisionShape> m_groundShape;
  std::unique_ptr<btSequentialImpulseConstraintSolver> m_solver;
@@ -59,21 +56,3 @@ private:
 
 
 #endif
-
-/*
-class PhysicsLib : public ngl::Singleton<PhysicsLib>
-{
-friend class ngl::Singleton<PhysicsLib>;
-
-public :
-
-
-private :
-  PhysicsLib();
-  ~PhysicsLib();
-
-};
-
-
-PhysicsLib *physics = PhysicsLib::instance();
-*/

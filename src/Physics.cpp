@@ -1,5 +1,5 @@
 #include "Physics.h"
-#include "CollisionShape.h"
+//#include "CollisionShape.h"
 #include <iostream>
 #include <ngl/Obj.h>
 #include <ngl/Quaternion.h>
@@ -28,10 +28,10 @@ Physics::~Physics()
 
 }
 
-void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad)
 {
   //creating dynamic rigid body - sphere
-  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = new btSphereShape(btScalar(_rad));
 
   //create dynamic objects
   btTransform startTransform;
@@ -65,9 +65,9 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, b
   m_bodies.push_back(s);
 }
 
-void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
-  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = new btConeShape(btScalar(_rad),btScalar(_height));
   btTransform startTransform;
   startTransform.setIdentity();
   btScalar mass(2);
@@ -96,9 +96,9 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool
   m_bodies.push_back(s);
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic)
+void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic, ngl::Vec3 _size)
 {
-  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -124,9 +124,9 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
   m_bodies.push_back(s);
 }
 
-void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
-  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = new btCapsuleShape(btScalar(_rad),btScalar(_height));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -153,9 +153,9 @@ void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, b
   m_bodies.push_back(s);
 }
 
-void Physics::addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic)
+void Physics::addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Vec3 _size)
 {
-  btCollisionShape* colShape = shape::CollisionShape::instance()->getShape(_shapeName);
+  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));
 
   btTransform startTransform;
   startTransform.setIdentity();
@@ -199,7 +199,7 @@ void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
 
     m_dynamicsWorld->addRigidBody(rigidBody);
     Body s;
-    s.name="groundPlane";
+    s.name=_name;
     s.body=rigidBody;
     m_bodies.push_back(s);
   }
@@ -258,3 +258,5 @@ void Physics::reset()
   }
   m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
 }
+
+
