@@ -1,33 +1,20 @@
 #include "Shape.h"
-#include  "Physics.h"
+#include <iostream>
 
-Shape::Shape()
+Shape::Shape(int _id, ngl::Material _mat, Physics *_physics)
 {
-  m_id =m_physics->getNumCollisionObjects();
+  m_id = _id;
+  m_physics = _physics;
+  m_mat = _mat;
 }
 
-Shape *Shape::instance()
+void Shape::draw(const std::string &_shader)
 {
-  static Shape s_instance;
-  return &s_instance;
+  std::cout << "WARNING: default draw call, shape type unknown" << std::endl;
 }
 
 ngl::Mat4 Shape::getTransformMatrix()
 {
-  return m_physics->getTransformMatrix(m_id);
-}
-
-int Shape::isStatic()
-{
-  return m_physics->isStatic(m_id);
-}
-
-int Shape::getShapeID()
-{
-  return m_physics->getCollisionShape(m_id);
-}
-
-void Shape::setColour()
-{
-
+  ngl::Mat4 transRot = m_physics->getTransformMatrix(m_id);
+  return transRot;
 }

@@ -19,13 +19,14 @@ public:
   {
     m_dynamicsWorld->setGravity(btVector3(_x,_y,_z));
   }
-  void addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos);
-  void addSphere(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad);
-  void addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height);
-  void addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic, ngl::Vec3 _size);
-  void addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height);
-  void addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Vec3 _size);
+  int addGroundPlane(ngl::Real _yPos);
+  int addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad);
+  int addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad, ngl::Real _height);
+  int addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 _size);
+  int addCapsule(ngl::Vec3 _pos, ngl::Real _mass,bool _isStatic, ngl::Real _rad, ngl::Real _height);
   void step(float _time, float _step);
+
+  int addRigidBodyToDW(btRigidBody* _rigidBody);
 
   unsigned int getNumCollisionObjects()const
   {
@@ -37,11 +38,11 @@ public:
   ngl::Mat4 getTransformMatrix(unsigned int _index);
 
 private:
-  typedef struct
-  {
-    std::string name;
-    btRigidBody* body;
-  }Body;
+  //typedef struct
+  //{
+  //  std::string name;
+  //  btRigidBody* body;
+  //}Body;
 
  std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
  std::unique_ptr<btCollisionShape> m_groundShape;
@@ -49,7 +50,7 @@ private:
  std::unique_ptr<btBroadphaseInterface> m_overlappingPairCache;
  std::unique_ptr<btCollisionDispatcher> m_dispatcher;
  std::unique_ptr<btDefaultCollisionConfiguration> m_collisionConfiguration;
- std::vector<Body> m_bodies;
+ //std::vector<Body> m_bodies;
 
 
 };

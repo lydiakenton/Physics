@@ -28,7 +28,7 @@ Physics::~Physics()
 
 }
 
-void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad)
+int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad)
 {
   //creating dynamic rigid body - sphere
   btCollisionShape* colShape = new btSphereShape(btScalar(_rad));
@@ -37,48 +37,41 @@ void Physics::addSphere(const std::string & _shapeName, const ngl::Vec3 &_pos, b
   btTransform startTransform;
   startTransform.setIdentity();
 
-  btScalar mass(2);
-
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   btVector3 inertia(0,0,0);
-  colShape->calculateLocalInertia(mass,inertia);
+  colShape->calculateLocalInertia(_mass,inertia);
 
   //motionstate provides interpolation capabilities
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
   rigidBodyCI.m_friction = 0.25f;
   rigidBodyCI.m_restitution = 0.75f;
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-  rigidBody->setLinearVelocity(btVector3(0,1,0));
+  //rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
   rigidBody->setRollingFriction(btScalar(0.75f));
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
   }
-
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body s;
-  s.name=_shapeName;
-  s.body=rigidBody;
-  m_bodies.push_back(s);
+  int index = addRigidBodyToDW(rigidBody);
+  return index;
 }
 
-void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height)
+int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
   btCollisionShape* colShape = new btConeShape(btScalar(_rad),btScalar(_height));
   btTransform startTransform;
   startTransform.setIdentity();
-  btScalar mass(2);
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
   startTransform.setRotation(btQuaternion(btVector3(1,0,0),btScalar(ngl::PI/2)));
   btVector3 inertia(0,0,0);
-  colShape->calculateLocalInertia(mass,inertia);
+  colShape->calculateLocalInertia(_mass,inertia);
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
   rigidBodyCI.m_friction=0.2f;
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
@@ -89,14 +82,11 @@ void Physics::addCone(const std::string &_shapeName, const ngl::Vec3 &_pos, bool
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
   }
 
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body s;
-  s.name=_shapeName;
-  s.body=rigidBody;
-  m_bodies.push_back(s);
+  int index = addRigidBodyToDW(rigidBody);
+  return index;
 }
 
-void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, const btScalar &_mass, bool _isStatic, ngl::Vec3 _size)
+int Physics::addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 _size)
 {
   btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));
 
@@ -117,27 +107,25 @@ void Physics::addCube(const std::string &_shapeName, const ngl::Vec3 &_pos, cons
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
   }
 
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body s;
-  s.name=_shapeName;
-  s.body=rigidBody;
-  m_bodies.push_back(s);
+  int index = addRigidBodyToDW(rigidBody);
+  return index;
 }
 
-void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Real _rad, ngl::Real _height)
+int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
   btCollisionShape* colShape = new btCapsuleShape(btScalar(_rad),btScalar(_height));
 
   btTransform startTransform;
   startTransform.setIdentity();
-  btScalar mass(1.0f);
 
   startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
+
+  //calculates intertia by passing by reference
   btVector3 inertia(0,0,0);
-  colShape->calculateLocalInertia(mass,inertia);
+  colShape->calculateLocalInertia(_mass,inertia);
 
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
@@ -146,63 +134,28 @@ void Physics::addCapsule(const std::string &_shapeName, const ngl::Vec3 &_pos, b
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
   }
 
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body s;
-  s.name=_shapeName;
-  s.body=rigidBody;
-  m_bodies.push_back(s);
+  int index = addRigidBodyToDW(rigidBody);
+  return index;
 }
 
-void Physics::addPlatform(const std::string &_shapeName, const ngl::Vec3 &_pos, bool _isStatic, ngl::Vec3 _size)
+int Physics::addGroundPlane(ngl::Real _yPos)
 {
-  btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));
-
-  btTransform startTransform;
-  startTransform.setIdentity();
-
-  startTransform.setOrigin(btVector3(_pos.m_x,_pos.m_y,_pos.m_z));
-  btScalar mass(0);
-  btVector3 inertia(0,0,0);
-
-  btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
-  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, colShape, inertia);
-
-  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-  rigidBody->setRestitution(0.75f);
-  if(_isStatic)
-  {
-    rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
-  }
-
-  m_dynamicsWorld->addRigidBody(rigidBody);
-  Body s;
-  s.name=_shapeName;
-  s.body=rigidBody;
-  m_bodies.push_back(s);
-}
-
-void Physics::addGroundPlane(const std::string &_name, const ngl::Vec3 &_pos)
-{
-  m_groundShape.reset(new btStaticPlaneShape(btVector3(0,1,0),_pos.m_y));
+  m_groundShape.reset(new btStaticPlaneShape(btVector3(0,1,0),_yPos));
 
   btTransform groundTransform;
   groundTransform.setIdentity();
-  {
-    btScalar mass(0);
-    btVector3 inertia(0,0,0);
 
-    btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
-    btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
-    btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-    rigidBody->setRestitution(0.75f);
-    rigidBody->setRollingFriction(0.1f);
+  btScalar mass(0);
+  btVector3 inertia(0,0,0);
 
-    m_dynamicsWorld->addRigidBody(rigidBody);
-    Body s;
-    s.name=_name;
-    s.body=rigidBody;
-    m_bodies.push_back(s);
-  }
+  btDefaultMotionState* motionState = new btDefaultMotionState(groundTransform);
+  btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(mass, motionState, m_groundShape.get(), inertia);
+  btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
+  rigidBody->setRestitution(0.75f);
+  rigidBody->setRollingFriction(0.1f);
+
+  int index = addRigidBodyToDW(rigidBody);
+  return index;
 }
 
 int Physics::getCollisionShape(unsigned int _index) const
@@ -250,13 +203,20 @@ void Physics::step(float _time, float _step)
   m_dynamicsWorld->stepSimulation(_time,_step);
 }
 
+int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
+{
+  int bodyIndex =  m_dynamicsWorld->getNumCollisionObjects();
+  m_dynamicsWorld->addRigidBody(_rigidBody);
+  return bodyIndex;
+}
+
 void Physics::reset()
 {
-  for(unsigned int i=1; i<m_bodies.size(); i++)
-  {
-    m_dynamicsWorld->removeRigidBody(m_bodies[i].body);
-  }
-  m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
+  //for(unsigned int i=1; i<m_bodies.size(); i++)
+  //{
+  //  m_dynamicsWorld->removeRigidBody(m_bodies[i].body);
+  //}
+  //m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
 }
 
 

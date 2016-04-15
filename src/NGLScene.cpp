@@ -11,10 +11,9 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
-#include "Physics.h"
 #include <ngl/Random.h>
 #include <stdlib.h>
-//#include "CollisionShape.h"
+#include "PhysicsLib.h"
 
 //----------------------------------------------------------------------------------------------------------------------
 /// @brief the increment for x/y translation with mouse movement
@@ -34,10 +33,7 @@ NGLScene::NGLScene()
   m_spinYFace=0.0f;
   setTitle("Simple Physics");
   m_animate=true;
-  m_physics=new Physics();
-  m_physics->setGravity(0,-10,0);
-  m_physics->addGroundPlane("plane",ngl::Vec3(0,0,0));
-
+  
   m_width=1024;
   m_height=720;
 }
@@ -45,7 +41,6 @@ NGLScene::NGLScene()
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
-  delete m_physics;
 }
 
 void NGLScene::resizeGL(QResizeEvent *_event)
@@ -61,64 +56,6 @@ void NGLScene::resizeGL(int _w , int _h)
   m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
-}
-
-void NGLScene::addSphere()
-{
-  ngl::Random *rand=ngl::Random::instance();
-  ngl::Real _x;
-  _x=rand->randomNumber(10.0f);
-  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
-
-  m_physics->addSphere("sphere", pos,false,0.1f);
-}
-
-void NGLScene::addCone()
-{
-  ngl::Random *rand=ngl::Random::instance();
-  ngl::Real _x;
-  _x=rand->randomNumber(10.0f);
-  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
-
-  m_physics->addCone("cone", pos,false,0.5f,0.5f);
-}
-
-void NGLScene::addCapsule()
-{
-  ngl::Random *rand=ngl::Random::instance();
-  ngl::Real _x;
-  _x=rand->randomNumber(10.0f);
-  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
-
-  m_physics->addCapsule("capsule", pos,false,0.4f,0.8f);
-}
-
-void NGLScene::addCube()
-{
-  ngl::Random *rand=ngl::Random::instance();
-  ngl::Real _x;
-  _x=rand->randomNumber(10.0f);
-  ngl::Vec3 pos = ngl::Vec3(_x,8.0f,0.0f);
-
-  m_physics->addCube("cube",pos,btScalar(1.0f),false,ngl::Vec3(0.5f,0.5f,0.5f));
-}
-
-void NGLScene::addPlatform()
-{
-  ngl::Random *rand=ngl::Random::instance();
-  ngl::Vec3 pos;
-  pos=rand->getRandomPoint(6.0f,6.0f,0.0f);
-  for(int i=0; i<pos.length(); i++)
-  {
-    if(pos[i] != pos.m_x)
-    {
-      pos[i] = abs(pos[i]);
-    }
-  }
-  if(pos.m_y>2)
-  {
-    m_physics->addPlatform("platform",pos,true,ngl::Vec3(1.0f,0.1f,0.5f));
-  }
 }
 
 void NGLScene::initializeGL()
@@ -162,16 +99,12 @@ void NGLScene::initializeGL()
   (*shader)["Phong"]->use();
   // the shader will use the currently active material and light0 so set them
 
-  ngl::Material m(ngl::STDMAT::COPPER);
-  m.loadToShader("material");
-  //shader->setShaderParam4f("colour",1,1,0,1);
-
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
   ngl::Vec3 from(0,0,20);
-  ngl::Vec3 to(0,0,0);
-  ngl::Vec3 up(0,1,0);
+  ngl::Vec3 to = ngl::Vec3::zero();
+  ngl::Vec3 up = ngl::Vec3::up();
   // now load to our new camera
   m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
@@ -179,11 +112,7 @@ void NGLScene::initializeGL()
   m_cam.setShape(45.0f,(float)720.0/576.0f,0.5f,350.0f);
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
-  ngl::VAOPrimitives *prim = ngl::VAOPrimitives::instance();
-  prim->createLineGrid("plane",50.0f,50.0f,40.0f);
-  prim->createSphere("sphere",0.1f,40.0f);
-  prim->createCone("cone",0.5f,0.5f,20.0f,20.0f);
-  prim->createCapsule("capsule",0.4f,0.8f,40.0f);
+  PhysicsLib::instance()->init();
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
@@ -199,7 +128,6 @@ void NGLScene::initializeGL()
 
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
-  m_text->setScreenSize(width(),height());
 
   startTimer(10);
   glViewport(0,0,width(),height());
@@ -219,10 +147,7 @@ void NGLScene::loadMatricesToShader()
   MVP= m_bodyTransform*M*m_cam.getVPMatrix();
   normalMatrix=MV;
   normalMatrix.inverse();
-  /*shader->setShaderParamFromMat4("MV",MV);
-  shader->setShaderParamFromMat4("MVP",MVP);
-  shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
-  shader->setShaderParamFromMat4("M",M);*/
+
   shader->setRegisteredUniform("MV",MV);
   shader->setRegisteredUniform("MVP",MVP);
   shader->setRegisteredUniform("normalMatrix",normalMatrix);
@@ -236,7 +161,7 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  m_text->setScreenSize(width(),height());
+  m_text->setScreenSize(m_width,m_height);
   m_text->setTransform(m_x,m_y);
 
   // grab an instance of the shader manager
@@ -256,97 +181,54 @@ void NGLScene::paintGL()
   m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
   m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
-  //get the VBO instance to draw shapes
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
-  loadMatricesToShader();
-
-  unsigned int bodies = m_physics->getNumCollisionObjects();
-  std::cout << "bodies:" << bodies <<std::endl;
-  for(unsigned int i=1; i<bodies; i++)
-  {
-    m_bodyTransform = m_physics->getTransformMatrix(i);
-    loadMatricesToShader();
-
-    std::cout << "getting matrix: "<<std::endl;
-    for(int j=0; j<4; j++)
-    {
-      for(int k=0; k<4; k++)
-      {
-        std::cout << m_bodyTransform.m_m[j][k]<< ", ";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << std::endl;
-
-    if((m_physics->isStatic(i))==1)
-    {
-      m_bodyTransform.scale(2.0f,0.2f,1.0f);
-      loadMatricesToShader();
-      prim->draw("cube");
-    }
-    else
-    {
-      ngl::Mat4 coneRotateMatrix;
-      ngl::Mat4 coneTranslateMatrix;
-
-      switch(m_physics->getCollisionShape(i))
-      {
-        case SPHERE_SHAPE_PROXYTYPE:
-          prim->draw("sphere");
-        break;
-
-        case CONE_SHAPE_PROXYTYPE:
-          coneTranslateMatrix.translate(0.0f,0.0f,-0.25f);
-          coneRotateMatrix.rotateX(-90);
-          m_bodyTransform = coneRotateMatrix * m_bodyTransform;
-          m_bodyTransform = coneTranslateMatrix * m_bodyTransform;
-          loadMatricesToShader();
-
-          prim->draw("cone");
-        break;
-
-        case BOX_SHAPE_PROXYTYPE:
-          prim->draw("cube");
-        break;
-
-        case CAPSULE_SHAPE_PROXYTYPE:
-          prim->draw("capsule");
-        break;
-      }
-    }
-    std::cout << m_physics->isStatic(i) << std::endl;
-  }
+  drawPhysicsShapes();
 
   m_bodyTransform.identity();
   loadMatricesToShader();
-  prim->draw("plane");
+  //ngl::VAOPrimitives::instance()->draw("cube");
 
   renderTextToScreen();
 }
 
+void NGLScene::drawPhysicsShapes()
+{
+  PhysicsLib *physics = PhysicsLib::instance();
+  for(int i=0; i< physics->getNumOfShapes(); i++)
+  {
+    std::cout << "draw shape" << std::endl;
+    m_bodyTransform = physics->getShapeTransformMatrix(i);
+    loadMatricesToShader();
+    physics->drawShape(i,"material");
+  }
+  m_bodyTransform.identity();
+  loadMatricesToShader();
+  physics->drawGroundPlane("material");
+  std::cout << "finished drawing" << std::endl;
+}
+
 void NGLScene::renderTextToScreen()
 {
-  unsigned int bodies = m_physics->getNumCollisionObjects();
+//  unsigned int bodies = m_physics->getNumCollisionObjects();
 
-  m_text->setColour(ngl::Colour(1,1,1));
-  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
-  m_text->renderText(10,12*3,"Press C to clear the screen");
-  m_text->renderText(10,12*5,"Press Esc to exit");
-  m_text->renderText(10,12*9, "Transformation Matrix: ");
+//  m_text->setColour(ngl::Colour(1,1,1));
+//  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
+//  m_text->renderText(10,12*3,"Press C to clear the screen");
+//  m_text->renderText(10,12*5,"Press Esc to exit");
+//  m_text->renderText(10,12*9, "Transformation Matrix: ");
 
-  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
-  m_text->renderText(10,12*7,text2);
-  m_bodyTransform = m_physics->getTransformMatrix(bodies-1);
-  QString text;
+//  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
+//  m_text->renderText(10,12*7,text2);
+//  m_bodyTransform = m_physics->getTransformMatrix(bodies-1);
+//  QString text;
 
-  for(int j=0; j<4; j++)
-  {
-    for(int k=0; k<4; k++)
-    {
-      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-      m_text->renderText(10+(75*j),130+(24*k),text);
-    }
-  }
+//  for(int j=0; j<4; j++)
+//  {
+//    for(int k=0; k<4; k++)
+//    {
+//      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+//      m_text->renderText(10+(75*j),130+(24*k),text);
+//    }
+//  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -434,6 +316,14 @@ void NGLScene::wheelEvent(QWheelEvent *_event)
 
 void NGLScene::keyPressEvent(QKeyEvent *_event)
 {
+  PhysicsLib *physics = PhysicsLib::instance();
+  ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
+
+  ngl::Random *rng = ngl::Random::instance();
+  float rad = rng->randomPositiveNumber(3);
+  float height = rng->randomPositiveNumber(3);
+  float width = rng->randomPositiveNumber(3);
+  float length = rng->randomPositiveNumber(3);
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
   switch (_event->key())
@@ -449,17 +339,20 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   // show windowed
   case Qt::Key_N : showNormal(); break;
   // create sphere
-  case Qt::Key_1 : addSphere(); break;
+  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 10, 0), false, 1.0); break;
   // create cone
-  case Qt::Key_2 : addCone(); break;
+  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 10, 0), false, 1.0, 1.0); break;
   //create dynamic box
-  case Qt::Key_3 : addCube(); break;
+  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 10, 0), false, ngl::Vec3(1.0, 1.0, 1.0)); break;
   //create dynamic capsule
-  case Qt::Key_4 : addCapsule(); break;
+  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 10, 0), false, 1.0, 1.0); break;
   //create static platform
-  case Qt::Key_5 : addPlatform(); break;
+  case Qt::Key_Left :
+    mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
+    physics->setMaterial(mat);
+    break;
   //delete bodies in the window
-  case Qt::Key_C : resetSim(); break;
+  case Qt::Key_Right : physics->setMaterial(ngl::STDMAT::PEWTER); break;
   default : break;
   }
   // finally update the GLWindow and re-draw
@@ -468,20 +361,14 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 
 void NGLScene::resetSim()
 {
-  m_physics->reset();
+
 }
 
 void NGLScene::timerEvent(QTimerEvent *_e)
 {
   if(m_animate==true)
     {
-      m_physics->step(1.0/60.0,10);
+      PhysicsLib::instance()->step(1.0/60,10);
     }
   update();
-}
-
-void NGLScene::stepAnimation()
-{
-  std::cout<<"stepping animation"<<std::endl;
-  m_physics->step(1.0/20.0,10);
 }

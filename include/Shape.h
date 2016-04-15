@@ -6,27 +6,29 @@
 #include <ngl/Vec4.h>
 #include <btBulletDynamicsCommon.h>
 #include <memory>
-#include <unordered_map>
-
-class Physics;
+#include "Physics.h"
+#include <ngl/VAOPrimitives.h>
+#include <ngl/Material.h>
 
 class Shape
 {
 public:
 
-  Shape();
+  Shape(int _id, ngl::Material _mat, Physics *_physics);
 
-  static Shape *instance();
+  virtual void draw(const std::string &_shader);
+
   int getShapeID();
-  int isStatic();
-  ngl::Mat4 getTransformMatrix();
-  void setColour();
+  bool isStatic();
+  virtual ngl::Mat4 getTransformMatrix();
+  //void setColour();
+  //int getShapeType() const {return m_shapeType;}
 
-private:
+protected:
 
   unsigned int m_id;
-  btCollisionShape *m_shapes;
-  ngl::Vec4 m_colour;
+  //btCollisionShape *m_shapes;
+  ngl::Material m_mat;
 
   Physics *m_physics;
 };

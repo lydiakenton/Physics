@@ -24,8 +24,6 @@
 /// put in this file
 //----------------------------------------------------------------------------------------------------------------------
 
-class Physics;
-
 class NGLScene : public QOpenGLWindow
 {
   Q_OBJECT
@@ -57,15 +55,12 @@ class NGLScene : public QOpenGLWindow
     void resizeGL(int _w, int _h);
 
     void resetSim();
+
     void stepAnimation();
-    void addSphere();
-    void addCone();
-    void addCube();
-    void addPlatform();
-    void addCapsule();
+
     void renderTextToScreen();
 
-    Physics *getPhysics() {return m_physics;}
+    void drawPhysicsShapes();
 
 private:
     float m_x;
@@ -163,8 +158,6 @@ private:
     void wheelEvent( QWheelEvent *_event);
 
     bool m_animate;
-
-    Physics *m_physics;
 
     void timerEvent(QTimerEvent *);
 

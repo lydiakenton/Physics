@@ -19,12 +19,24 @@ SOURCES+= $$PWD/src/NGLScene.cpp    \
           $$PWD/src/main.cpp \
           $$PWD/src/Physics.cpp \
           $$PWD/src/Shape.cpp \
-          $$PWD/src/PhysicsLib.cpp
+          $$PWD/src/PhysicsLib.cpp \
+          $$PWD/src/Sphere.cpp \
+          $$PWD/src/Cube.cpp \
+          $$PWD/src/Cone.cpp \
+          $$PWD/src/Capsule.cpp \
+          $$PWD/src/GroundPlane.cpp
+
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
           $$PWD/include/Physics.h \
           $$PWD/include/Shape.h \
-          $$PWD/include/PhysicsLib.h
+          $$PWD/include/PhysicsLib.h \
+          $$PWD/include/Sphere.h \
+          $$PWD/include/Cube.h \
+          $$PWD/include/Cone.h \
+          $$PWD/include/Capsule.h \
+          $$PWD/include/GroundPlane.h
+
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH +=./include
 INCLUDEPATH+=/usr/local/include/bullet
