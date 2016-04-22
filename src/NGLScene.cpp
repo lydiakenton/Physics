@@ -43,6 +43,11 @@ NGLScene::~NGLScene()
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
+void NGLScene::addPlayer()
+{
+
+}
+
 void NGLScene::resizeGL(QResizeEvent *_event)
 {
   m_width=_event->size().width()*devicePixelRatio();
@@ -129,8 +134,18 @@ void NGLScene::initializeGL()
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
+  m_player.reset( new Player(ngl::Vec3::zero()));
+  // add static cube
+
   startTimer(10);
   glViewport(0,0,width(),height());
+
+  PhysicsLib *physics = PhysicsLib::instance();
+  for(int pos=1; pos<50; pos++)
+  {
+    physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(6, 0.5, 2));
+  }
+
 }
 
 
@@ -185,7 +200,6 @@ void NGLScene::paintGL()
 
   m_bodyTransform.identity();
   loadMatricesToShader();
-  //ngl::VAOPrimitives::instance()->draw("cube");
 
   renderTextToScreen();
 }
@@ -203,6 +217,7 @@ void NGLScene::drawPhysicsShapes()
   m_bodyTransform.identity();
   loadMatricesToShader();
   physics->drawGroundPlane("material");
+
   std::cout << "finished drawing" << std::endl;
 }
 
@@ -324,13 +339,14 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   float height = rng->randomPositiveNumber(3);
   float width = rng->randomPositiveNumber(3);
   float length = rng->randomPositiveNumber(3);
+
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
   switch (_event->key())
   {
   // escape key to quit
   case Qt::Key_Escape : QGuiApplication::exit(EXIT_SUCCESS); break;
-  // turn on wirframe rendering
+  // turn on wireframe rendering
   case Qt::Key_W : glPolygonMode(GL_FRONT_AND_BACK,GL_LINE); break;
   // turn off wire frame
   case Qt::Key_S : glPolygonMode(GL_FRONT_AND_BACK,GL_FILL); break;
@@ -339,20 +355,21 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   // show windowed
   case Qt::Key_N : showNormal(); break;
   // create sphere
-  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 10, 0), false, 1.0); break;
+  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 5, 0), true, rad); break;
   // create cone
-  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 10, 0), false, 1.0, 1.0); break;
+  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 10, 0), false, rad, height); break;
   //create dynamic box
-  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 10, 0), false, ngl::Vec3(1.0, 1.0, 1.0)); break;
+  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 10, 0), false, ngl::Vec3(width, height, length)); break;
   //create dynamic capsule
-  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 10, 0), false, 1.0, 1.0); break;
-  //create static platform
-  case Qt::Key_Left :
+  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
+  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 10, 0), false, rad, rad); break;
+
+  case Qt::Key_P :
     mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
     physics->setMaterial(mat);
     break;
   //delete bodies in the window
-  case Qt::Key_Right : physics->setMaterial(ngl::STDMAT::PEWTER); break;
+  case Qt::Key_Q : physics->setMaterial(ngl::STDMAT::PEWTER); break;
   default : break;
   }
   // finally update the GLWindow and re-draw

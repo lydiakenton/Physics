@@ -40,33 +40,49 @@ void PhysicsLib::addGroundPlane(ngl::Real _yPos)
 
 void PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
 {
-  ngl::Real mass = ngl::PI*_rad*_rad*(_height/3);
+  ngl::Real mass = 0;
+  if(!_static)
+  {
+    mass = ngl::PI*_rad*_rad*(_height/3);
+  }
   int coneIndex = m_physics.addCone(_pos,mass,_static,_rad,_height);
-  m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics)));
+  m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
 }
 
 void PhysicsLib::addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
 {
   // mass = volume of sphere + volume of cylinder
-  ngl::Real mass = ((4/3)* ngl::PI *_rad*_rad*_rad) + (ngl::PI *_rad*_rad*_height);
+  ngl::Real mass = 0;
+  if(!_static)
+  {
+   mass = ((4/3)* ngl::PI *_rad*_rad*_rad) + (ngl::PI *_rad*_rad*_height);
+  }
   int capsuleIndex = m_physics.addCapsule(_pos,mass,_static,_rad,_height);
-  m_shapes.push_back(std::unique_ptr<Capsule>(new Capsule(capsuleIndex,_rad,_height, m_currentMat, &m_physics)));
+  m_shapes.push_back(std::unique_ptr<Capsule>(new Capsule(capsuleIndex,_rad,_height, m_currentMat, &m_physics, _static)));
 }
 
 void PhysicsLib::addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size)
 {
   // divide by 2 so that ngl and bullet agree about size
-  _size/=2;
-  ngl::Real mass = _size.m_x*_size.m_y*_size.m_z;
-  int cubeIndex = m_physics.addCube(_pos,mass,_static,_size);
-  m_shapes.push_back(std::unique_ptr<Cube>(new Cube(cubeIndex,_size, m_currentMat, &m_physics)));
+  ngl::Vec3 collisionSize = _size/2;
+  ngl::Real mass = 0;
+  if(!_static)
+  {
+    mass = _size.m_x*_size.m_y*_size.m_z;
+  }
+  int cubeIndex = m_physics.addCube(_pos,mass,_static,collisionSize);
+  m_shapes.push_back(std::unique_ptr<Cube>(new Cube(cubeIndex,_size, m_currentMat, &m_physics, _static)));
 }
 
 void PhysicsLib::addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad)
 {
-  ngl::Real mass = (4/3) * ngl::PI *_rad*_rad*_rad;
+  ngl::Real mass = 0;
+  if(!_static)
+  {
+    mass = (4/3) * ngl::PI *_rad*_rad*_rad;
+  }
   int sphereIndex = m_physics.addSphere(_pos,mass,_static,_rad);
-  m_shapes.push_back(std::unique_ptr<Sphere>(new Sphere(sphereIndex,_rad, m_currentMat, &m_physics)));
+  m_shapes.push_back(std::unique_ptr<Sphere>(new Sphere(sphereIndex,_rad, m_currentMat, &m_physics, _static)));
 }
 
 void PhysicsLib::step(float _time, float _step)

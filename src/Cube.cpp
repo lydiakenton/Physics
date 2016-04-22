@@ -1,20 +1,14 @@
 #include "Cube.h"
 
-Cube::Cube(int _id, ngl::Vec3 _size, ngl::Material _mat, Physics *_physics):
-  Shape(_id, _mat, _physics)
+Cube::Cube(int _id, ngl::Vec3 _size, ngl::Material _mat, Physics *_physics, bool _static):
+  Shape(_id, _mat, _physics,_static)
 {
   m_size = _size;
+  m_scaleMat.scale(_size.m_x, _size.m_y, _size.m_z);
 }
 
 void Cube::draw(const std::string &_shader)
 {
   m_mat.loadToShader(_shader);
   ngl::VAOPrimitives::instance()->draw("cube");
-}
-
-ngl::Mat4 Cube::getTransformMatrix()
-{
-  ngl::Mat4 transRot = m_physics->getTransformMatrix(m_id);
-  //transRot.scale();
-  return transRot;
 }

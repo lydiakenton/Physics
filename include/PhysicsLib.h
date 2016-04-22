@@ -9,6 +9,7 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "GroundPlane.h"
+#include "Player.h"
 
 class PhysicsLib : public ngl::Singleton<PhysicsLib>
 {

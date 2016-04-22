@@ -14,12 +14,12 @@ class Shape
 {
 public:
 
-  Shape(int _id, ngl::Material _mat, Physics *_physics);
+  Shape(int _id, ngl::Material _mat, Physics *_physics, bool _static);
 
   virtual void draw(const std::string &_shader);
 
   int getShapeID();
-  bool isStatic();
+  bool isStatic() {return m_static;}
   virtual ngl::Mat4 getTransformMatrix();
   //void setColour();
   //int getShapeType() const {return m_shapeType;}
@@ -27,8 +27,11 @@ public:
 protected:
 
   unsigned int m_id;
-  //btCollisionShape *m_shapes;
   ngl::Material m_mat;
+
+  ngl::Mat4 m_scaleMat;
+
+  bool m_static;
 
   Physics *m_physics;
 };

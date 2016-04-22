@@ -24,7 +24,8 @@ SOURCES+= $$PWD/src/NGLScene.cpp    \
           $$PWD/src/Cube.cpp \
           $$PWD/src/Cone.cpp \
           $$PWD/src/Capsule.cpp \
-          $$PWD/src/GroundPlane.cpp
+          $$PWD/src/GroundPlane.cpp \
+          $$PWD/src/Player.cpp
 
 # same for the .h files
 HEADERS+= $$PWD/include/NGLScene.h \
@@ -35,7 +36,8 @@ HEADERS+= $$PWD/include/NGLScene.h \
           $$PWD/include/Cube.h \
           $$PWD/include/Cone.h \
           $$PWD/include/Capsule.h \
-          $$PWD/include/GroundPlane.h
+          $$PWD/include/GroundPlane.h \
+          $$PWD/include/Player.h
 
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH +=./include

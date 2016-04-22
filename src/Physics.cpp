@@ -166,6 +166,19 @@ int Physics::getCollisionShape(unsigned int _index) const
   return collisionShape->getShapeType();
 }
 
+bool Physics::isCollision(unsigned int _index) const
+{
+  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  for(unsigned int i=0; i<getNumCollisionObjects(); i++)
+  {
+    if(obj->checkCollideWith(m_dynamicsWorld->getCollisionObjectArray()[i]))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 int Physics::isStatic(unsigned int _index)
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];

@@ -27,6 +27,7 @@ public:
   void step(float _time, float _step);
 
   int addRigidBodyToDW(btRigidBody* _rigidBody);
+  bool isCollision(unsigned int _index) const;
 
   unsigned int getNumCollisionObjects()const
   {
@@ -51,7 +52,6 @@ private:
  std::unique_ptr<btCollisionDispatcher> m_dispatcher;
  std::unique_ptr<btDefaultCollisionConfiguration> m_collisionConfiguration;
  //std::vector<Body> m_bodies;
-
 
 };
 

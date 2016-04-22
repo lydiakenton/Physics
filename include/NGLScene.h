@@ -11,6 +11,8 @@
 #include <QOpenGLWindow>
 #include <QElapsedTimer>
 #include <memory>
+
+#include "Player.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
 /// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
@@ -62,6 +64,8 @@ class NGLScene : public QOpenGLWindow
 
     void drawPhysicsShapes();
 
+    void addPlayer();
+
 private:
     float m_x;
     float m_y;
@@ -110,6 +114,8 @@ private:
     ngl::Text *m_text;
 
     ngl::Mat4 m_bodyTransform;
+
+    std::unique_ptr<Player> m_player;
 
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
