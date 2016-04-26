@@ -36,16 +36,14 @@ NGLScene::NGLScene()
   
   m_width=1024;
   m_height=720;
+
+  m_player.push_back( std::unique_ptr<Player>(new Player(m_playerPos)));
+  m_playerPos.set(0,1,0);
 }
 
 NGLScene::~NGLScene()
 {
   std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
-}
-
-void NGLScene::addPlayer()
-{
-
 }
 
 void NGLScene::resizeGL(QResizeEvent *_event)
@@ -134,18 +132,17 @@ void NGLScene::initializeGL()
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
-  m_player.reset( new Player(ngl::Vec3::zero()));
+
   // add static cube
 
   startTimer(10);
   glViewport(0,0,width(),height());
 
-  PhysicsLib *physics = PhysicsLib::instance();
-  for(int pos=1; pos<50; pos++)
-  {
-    physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(6, 0.5, 2));
-  }
-
+    PhysicsLib *physics = PhysicsLib::instance();
+    for(int pos=1; pos<50; pos++)
+    {
+      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(6, 0.5, 2));
+    }
 }
 
 
@@ -171,7 +168,6 @@ void NGLScene::loadMatricesToShader()
 
 void NGLScene::paintGL()
 {
-
   glViewport(0,0,m_width,m_height);
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -209,7 +205,6 @@ void NGLScene::drawPhysicsShapes()
   PhysicsLib *physics = PhysicsLib::instance();
   for(int i=0; i< physics->getNumOfShapes(); i++)
   {
-    std::cout << "draw shape" << std::endl;
     m_bodyTransform = physics->getShapeTransformMatrix(i);
     loadMatricesToShader();
     physics->drawShape(i,"material");
@@ -217,33 +212,32 @@ void NGLScene::drawPhysicsShapes()
   m_bodyTransform.identity();
   loadMatricesToShader();
   physics->drawGroundPlane("material");
-
-  std::cout << "finished drawing" << std::endl;
 }
 
 void NGLScene::renderTextToScreen()
 {
-//  unsigned int bodies = m_physics->getNumCollisionObjects();
+  PhysicsLib *physics = PhysicsLib::instance();
+  unsigned int bodies = physics->getNumOfShapes();
 
-//  m_text->setColour(ngl::Colour(1,1,1));
-//  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
-//  m_text->renderText(10,12*3,"Press C to clear the screen");
-//  m_text->renderText(10,12*5,"Press Esc to exit");
-//  m_text->renderText(10,12*9, "Transformation Matrix: ");
+  m_text->setColour(ngl::Colour(1,1,1));
+  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
+  m_text->renderText(10,12*3,"Press C to clear the screen");
+  m_text->renderText(10,12*5,"Press Esc to exit");
+  m_text->renderText(10,12*9, "Transformation Matrix: ");
 
-//  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
-//  m_text->renderText(10,12*7,text2);
-//  m_bodyTransform = m_physics->getTransformMatrix(bodies-1);
-//  QString text;
+  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
+  m_text->renderText(10,12*7,text2);
+  m_bodyTransform = physics->getShapeTransformMatrix(bodies-1);
+  QString text;
 
-//  for(int j=0; j<4; j++)
-//  {
-//    for(int k=0; k<4; k++)
-//    {
-//      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-//      m_text->renderText(10+(75*j),130+(24*k),text);
-//    }
-//  }
+  for(int j=0; j<4; j++)
+  {
+    for(int k=0; k<4; k++)
+    {
+      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+      m_text->renderText(10+(75*j),130+(24*k),text);
+    }
+  }
 }
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -355,21 +349,31 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   // show windowed
   case Qt::Key_N : showNormal(); break;
   // create sphere
-  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 5, 0), true, rad); break;
+  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 15, -6), false, rad); break;
   // create cone
-  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 10, 0), false, rad, height); break;
+  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 15, -6), false, 1.0, 1.0); break; //used rad twice to make cones uniform. trying to get them to not clip through floor
   //create dynamic box
-  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 10, 0), false, ngl::Vec3(width, height, length)); break;
+  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 15, -6), false, ngl::Vec3(width, height, length)); break;
   //create dynamic capsule
   //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
-  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 10, 0), false, rad, rad); break;
+  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 15, 6), false, rad, rad); break;
 
-  case Qt::Key_P :
+  case Qt::Key_Up :
     mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
     physics->setMaterial(mat);
     break;
   //delete bodies in the window
-  case Qt::Key_Q : physics->setMaterial(ngl::STDMAT::PEWTER); break;
+  case Qt::Key_Down : physics->setMaterial(ngl::STDMAT::PEWTER); break;
+  case Qt::Key_Left :
+    updatePlayerPos(-1,0,0);
+    for(auto &player : m_player)
+    {
+      loadMatricesToShader();
+      player->draw();
+      removePlayers();
+    }
+    break;
+
   default : break;
   }
   // finally update the GLWindow and re-draw
@@ -379,6 +383,28 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 void NGLScene::resetSim()
 {
 
+}
+
+void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)
+{
+  for(auto &player : m_player)
+  {
+    m_playerPos.m_x += _dx;
+    m_playerPos.m_y += _dy;
+    m_playerPos.m_z += _dz;
+    player->setPos(m_playerPos);
+  }
+  std::cout<<"position: "<<m_playerPos[0]<<std::endl;
+  std::cout<<"position: "<<m_playerPos[1]<<std::endl;
+  std::cout<<"position: "<<m_playerPos[2]<<std::endl;
+}
+
+void NGLScene::removePlayers()
+{
+  if(m_player.size()>2)
+  {
+    m_player.pop_back();
+  }
 }
 
 void NGLScene::timerEvent(QTimerEvent *_e)

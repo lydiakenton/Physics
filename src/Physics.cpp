@@ -1,5 +1,4 @@
 #include "Physics.h"
-//#include "CollisionShape.h"
 #include <iostream>
 #include <ngl/Obj.h>
 #include <ngl/Quaternion.h>
@@ -193,7 +192,6 @@ ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
   btRigidBody* rigidBody = btRigidBody::upcast(obj);
   if(rigidBody && rigidBody->getMotionState())
   {
-    std::cout << "working" << std::endl;
     btTransform transform;
     rigidBody->getMotionState()->getWorldTransform(transform);
     float matrix[16];

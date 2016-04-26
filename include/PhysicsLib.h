@@ -21,14 +21,13 @@ public :
 
   const std::vector<std::unique_ptr<Shape>>& getShapes(){return m_shapes;}
 
-
-
   void addGroundPlane(ngl::Real _yPos);
   void addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size);
   void addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad);
   void addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
   void addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
 
+  void addPlayer(ngl::Vec3 _pos);
 
   ngl::Mat4 getShapeTransformMatrix(int _shapeIndex);
   void drawShape(int _shapeIndex, const std::string &_shader);
@@ -36,6 +35,7 @@ public :
 
   void drawGroundPlane(const std::string &_shader);
   void step(float _time, float _step);
+  void drawPlayer(const std::string &_shader);
 
   void setMaterial(ngl::Material _mat);
 
@@ -47,11 +47,11 @@ private :
 
   std::unique_ptr<GroundPlane> m_groundPlane;
 
+  std::unique_ptr<Player> m_player;
+
   std::vector<std::unique_ptr<Shape>> m_shapes;
 
   ngl::Material m_currentMat;
 };
-
-//PhysicsLib *physics = PhysicsLib::instance();
 
 #endif

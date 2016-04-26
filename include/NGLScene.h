@@ -11,7 +11,6 @@
 #include <QOpenGLWindow>
 #include <QElapsedTimer>
 #include <memory>
-
 #include "Player.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
@@ -64,7 +63,9 @@ class NGLScene : public QOpenGLWindow
 
     void drawPhysicsShapes();
 
-    void addPlayer();
+    void updatePlayerPos(float _dx, float _dy, float _dz);
+
+    void removePlayers();
 
 private:
     float m_x;
@@ -115,8 +116,9 @@ private:
 
     ngl::Mat4 m_bodyTransform;
 
-    std::unique_ptr<Player> m_player;
+    std::vector<std::unique_ptr<Player>> m_player;
 
+    ngl::Vec3 m_playerPos;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
     //----------------------------------------------------------------------------------------------------------------------
