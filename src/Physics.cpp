@@ -221,13 +221,4 @@ int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
   return bodyIndex;
 }
 
-void Physics::reset()
-{
-  //for(unsigned int i=1; i<m_bodies.size(); i++)
-  //{
-  //  m_dynamicsWorld->removeRigidBody(m_bodies[i].body);
-  //}
-  //m_bodies.erase(m_bodies.begin()+1,m_bodies.end());
-}
-
 

@@ -14,7 +14,6 @@ public:
   Physics();
   ~Physics();
 
-  void reset();
   void setGravity(float _x, float _y, float _z)
   {
     m_dynamicsWorld->setGravity(btVector3(_x,_y,_z));
@@ -39,11 +38,6 @@ public:
   ngl::Mat4 getTransformMatrix(unsigned int _index);
 
 private:
-  //typedef struct
-  //{
-  //  std::string name;
-  //  btRigidBody* body;
-  //}Body;
 
  std::unique_ptr<btDiscreteDynamicsWorld> m_dynamicsWorld;
  std::unique_ptr<btCollisionShape> m_groundShape;
@@ -51,7 +45,6 @@ private:
  std::unique_ptr<btBroadphaseInterface> m_overlappingPairCache;
  std::unique_ptr<btCollisionDispatcher> m_dispatcher;
  std::unique_ptr<btDefaultCollisionConfiguration> m_collisionConfiguration;
- //std::vector<Body> m_bodies;
 
 };
 

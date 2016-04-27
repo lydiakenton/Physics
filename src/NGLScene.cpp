@@ -38,7 +38,7 @@ NGLScene::NGLScene()
   m_height=720;
 
   m_player.push_back( std::unique_ptr<Player>(new Player(m_playerPos)));
-  m_playerPos.set(0,1,0);
+  m_playerPos.set(0,2,-10);
 }
 
 NGLScene::~NGLScene()
@@ -51,12 +51,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_width=_event->size().width()*devicePixelRatio();
   m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam.setShape(45.0f,(float)width()/height(),0.05f,350.0f);
+  m_cam.setShape(70.0f,(float)width()/height(),0.5f,350.0f);
 }
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(45.0f,(float)_w/_h,0.05f,350.0f);
+  m_cam.setShape(70.0f,(float)_w/_h,0.5f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -112,7 +112,7 @@ void NGLScene::initializeGL()
   m_cam.set(from,to,up);
   // set the shape using FOV 45 Aspect Ratio based on Width and Height
   // The final two are near and far clipping planes of 0.5 and 10
-  m_cam.setShape(45.0f,(float)720.0/576.0f,0.5f,350.0f);
+  m_cam.setShape(70.0f,(float)720.0/576.0f,0.5f,350.0f);
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
   PhysicsLib::instance()->init();
@@ -132,17 +132,18 @@ void NGLScene::initializeGL()
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
-
-  // add static cube
-
   startTimer(10);
   glViewport(0,0,width(),height());
 
-    PhysicsLib *physics = PhysicsLib::instance();
-    for(int pos=1; pos<50; pos++)
-    {
-      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(6, 0.5, 2));
-    }
+  addStairs();
+
+  updatePlayerPos(0,0,0);
+  for(auto &player : m_player)
+  {
+    loadMatricesToShader();
+    player->draw();
+  }
+
 }
 
 
@@ -200,6 +201,15 @@ void NGLScene::paintGL()
   renderTextToScreen();
 }
 
+void NGLScene::addStairs()
+{
+    PhysicsLib *physics = PhysicsLib::instance();
+    for(int pos=20; pos<60; pos++)
+    {
+      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(15, 0.5, 2));
+    }
+}
+
 void NGLScene::drawPhysicsShapes()
 {
   PhysicsLib *physics = PhysicsLib::instance();
@@ -214,6 +224,28 @@ void NGLScene::drawPhysicsShapes()
   physics->drawGroundPlane("material");
 }
 
+void NGLScene::addPhysicsShapes()
+{
+  PhysicsLib *physics = PhysicsLib::instance();
+
+  ngl::Random *rng = ngl::Random::instance();
+  float rad = rng->randomPositiveNumber(2);
+  float height = rng->randomPositiveNumber(2);
+  float width = rng->randomPositiveNumber(2);
+  float length = rng->randomPositiveNumber(2);
+
+  physics->addSphere(ngl::Vec3(0, 30, -20), false, rad);
+
+  //used rad twice to make cones uniform. trying to get them to not clip through floor
+  physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0);
+
+  physics->addCube(ngl::Vec3(0, 30, -20), false, ngl::Vec3(width, height, length));
+
+  //create dynamic capsule
+  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
+  physics->addCapsule(ngl::Vec3(0,30, -20), false, rad, rad);
+}
+
 void NGLScene::renderTextToScreen()
 {
   PhysicsLib *physics = PhysicsLib::instance();
@@ -221,7 +253,7 @@ void NGLScene::renderTextToScreen()
 
   m_text->setColour(ngl::Colour(1,1,1));
   m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
-  m_text->renderText(10,12*3,"Press C to clear the screen");
+  m_text->renderText(10,12*3,"Press C to clear the shapes");
   m_text->renderText(10,12*5,"Press Esc to exit");
   m_text->renderText(10,12*9, "Transformation Matrix: ");
 
@@ -328,11 +360,11 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   PhysicsLib *physics = PhysicsLib::instance();
   ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
 
-  ngl::Random *rng = ngl::Random::instance();
-  float rad = rng->randomPositiveNumber(3);
-  float height = rng->randomPositiveNumber(3);
-  float width = rng->randomPositiveNumber(3);
-  float length = rng->randomPositiveNumber(3);
+//  ngl::Random *rng = ngl::Random::instance();
+//  float rad = rng->randomPositiveNumber(2);
+//  float height = rng->randomPositiveNumber(2);
+//  float width = rng->randomPositiveNumber(2);
+//  float length = rng->randomPositiveNumber(2);
 
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
@@ -348,31 +380,44 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
-  // create sphere
-  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 15, -6), false, rad); break;
-  // create cone
-  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 15, -6), false, 1.0, 1.0); break; //used rad twice to make cones uniform. trying to get them to not clip through floor
-  //create dynamic box
-  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 15, -6), false, ngl::Vec3(width, height, length)); break;
-  //create dynamic capsule
-  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
-  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0, 15, 6), false, rad, rad); break;
+  //clear screen
+  case Qt::Key_C : resetSim(); break;
+//  // create sphere
+//  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 30, -20), false, rad); break;
+//  // create cone
+//  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0); break; //used rad twice to make cones uniform. trying to get them to not clip through floor
+//  //create dynamic box
+//  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 30, -20), false, ngl::Vec3(width, height, length)); break;
+//  //create dynamic capsule
+//  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
+//  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0,30, -20), false, rad, rad); break;
+
+  case Qt::Key_1 : addPhysicsShapes(); break;
 
   case Qt::Key_Up :
     mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
     physics->setMaterial(mat);
     break;
-  //delete bodies in the window
   case Qt::Key_Down : physics->setMaterial(ngl::STDMAT::PEWTER); break;
+
   case Qt::Key_Left :
     updatePlayerPos(-1,0,0);
     for(auto &player : m_player)
     {
       loadMatricesToShader();
       player->draw();
-      removePlayers();
+      removePlayer();
     }
-    break;
+  break;
+  case Qt::Key_Right :
+    updatePlayerPos(1,0,0);
+    for(auto &player : m_player)
+    {
+      loadMatricesToShader();
+      player->draw();
+      removePlayer();
+    }
+  break;
 
   default : break;
   }
@@ -382,7 +427,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 
 void NGLScene::resetSim()
 {
-
+  PhysicsLib::instance()->reset();
 }
 
 void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)
@@ -395,16 +440,14 @@ void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)
     player->setPos(m_playerPos);
   }
   std::cout<<"position: "<<m_playerPos[0]<<std::endl;
-  std::cout<<"position: "<<m_playerPos[1]<<std::endl;
-  std::cout<<"position: "<<m_playerPos[2]<<std::endl;
 }
 
-void NGLScene::removePlayers()
+void NGLScene::removePlayer()
 {
-  if(m_player.size()>2)
-  {
-    m_player.pop_back();
-  }
+  std::cout<<"removing players"<<std::endl;
+
+  PhysicsLib::instance()->deleteCurrentShape();
+  //m_player.erase(m_player.end()-1);
 }
 
 void NGLScene::timerEvent(QTimerEvent *_e)

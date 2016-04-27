@@ -63,9 +63,13 @@ class NGLScene : public QOpenGLWindow
 
     void drawPhysicsShapes();
 
-    void updatePlayerPos(float _dx, float _dy, float _dz);
+    void removePlayer();
 
-    void removePlayers();
+    void addStairs();
+
+    void addPhysicsShapes();
+
+    void updatePlayerPos(float _dx, float _dy, float _dz);
 
 private:
     float m_x;

@@ -27,17 +27,17 @@ public :
   void addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
   void addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
 
-  void addPlayer(ngl::Vec3 _pos);
-
   ngl::Mat4 getShapeTransformMatrix(int _shapeIndex);
   void drawShape(int _shapeIndex, const std::string &_shader);
   int getNumOfShapes();
 
   void drawGroundPlane(const std::string &_shader);
   void step(float _time, float _step);
-  void drawPlayer(const std::string &_shader);
 
   void setMaterial(ngl::Material _mat);
+
+  void reset();
+  void deleteCurrentShape();
 
 private :
   PhysicsLib();
@@ -46,8 +46,6 @@ private :
   Physics m_physics;
 
   std::unique_ptr<GroundPlane> m_groundPlane;
-
-  std::unique_ptr<Player> m_player;
 
   std::vector<std::unique_ptr<Shape>> m_shapes;
 
