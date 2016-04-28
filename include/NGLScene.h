@@ -71,6 +71,8 @@ class NGLScene : public QOpenGLWindow
 
     void updatePlayerPos(float _dx, float _dy, float _dz);
 
+    void playerCollision();
+
 private:
     float m_x;
     float m_y;
@@ -123,6 +125,7 @@ private:
     std::vector<std::unique_ptr<Player>> m_player;
 
     ngl::Vec3 m_playerPos;
+
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
     //----------------------------------------------------------------------------------------------------------------------

@@ -37,8 +37,8 @@ NGLScene::NGLScene()
   m_width=1024;
   m_height=720;
 
+  m_playerPos.set(0,1,0);
   m_player.push_back( std::unique_ptr<Player>(new Player(m_playerPos)));
-  m_playerPos.set(0,2,-10);
 }
 
 NGLScene::~NGLScene()
@@ -136,14 +136,15 @@ void NGLScene::initializeGL()
   glViewport(0,0,width(),height());
 
   addStairs();
-  PhysicsLib::instance()->addCube(ngl::Vec3(0, 1, 0), false, ngl::Vec3(2, 2, 2));
 
-//  updatePlayerPos(0,0,0);
-//  for(auto &player : m_player)
-//  {
-//    loadMatricesToShader();
-//    player->draw();
-//  }
+  updatePlayerPos(0,1,0);
+  for(auto &player : m_player)
+  {
+    loadMatricesToShader();
+    player->draw();
+  }
+
+  playerCollision();
 
 }
 
@@ -361,12 +362,6 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   PhysicsLib *physics = PhysicsLib::instance();
   ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
 
-  ngl::Random *rng = ngl::Random::instance();
-  float rad = rng->randomPositiveNumber(2);
-  float height = rng->randomPositiveNumber(2);
-  float width = rng->randomPositiveNumber(2);
-  float length = rng->randomPositiveNumber(2);
-
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
   switch (_event->key())
@@ -383,15 +378,6 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_N : showNormal(); break;
   //clear screen
   case Qt::Key_C : resetSim(); break;
-  // create sphere
-//  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 30, -20), false, rad); break;
-//  // create cone
-//  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0); break; //used rad twice to make cones uniform. trying to get them to not clip through floor
-//  //create dynamic box
-//  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 3, 0), false, ngl::Vec3(width, height, length)); break;
-//  //create dynamic capsule
-//  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
-//  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0,30, -20), false, rad, rad); break;
 
   case Qt::Key_1 : addPhysicsShapes(); break;
 
@@ -401,30 +387,11 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
     break;
   case Qt::Key_Down : physics->setMaterial(ngl::STDMAT::PEWTER); break;
 
-//  case Qt::Key_Left :
-//    updatePlayerPos(-1,0,0);
-//    for(auto &player : m_player)
-//    {
-//      loadMatricesToShader();
-//      player->draw();
-//      //removePlayer();
-//    }
-//  break;
-//  case Qt::Key_Right :
-//    updatePlayerPos(1,0,0);
-//    for(auto &player : m_player)
-//    {
-//      loadMatricesToShader();
-//      player->draw();
-//      //removePlayer();
-//    }
-//  break;
   case Qt::Key_Left :
-    std::cout<<"num of shapes: "<<physics->getNumOfShapes()<<std::endl;
-    physics->movePhysicsObjLeft(40);
+    physics->moveLeft(40);
   break;
   case Qt::Key_Right :
-    physics->movePhysicsObjRight(40);
+    physics->moveRight(40);
   break;
 
   default : break;
@@ -442,20 +409,19 @@ void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)
 {
   for(auto &player : m_player)
   {
-    m_playerPos.m_x += _dx;
-    m_playerPos.m_y += _dy;
-    m_playerPos.m_z += _dz;
+    m_playerPos.m_x = _dx;
+    m_playerPos.m_y = _dy;
+    m_playerPos.m_z = _dz;
     player->setPos(m_playerPos);
   }
-  std::cout<<"position: "<<m_playerPos[0]<<std::endl;
 }
 
-void NGLScene::removePlayer()
+void NGLScene::playerCollision()
 {
-  std::cout<<"removing players"<<std::endl;
-
-  PhysicsLib::instance()->deleteCurrentShape();
-  //m_player.erase(m_player.end()-1);
+  if(PhysicsLib::instance()->collision())
+  {
+    resetSim();
+  }
 }
 
 void NGLScene::timerEvent(QTimerEvent *_e)

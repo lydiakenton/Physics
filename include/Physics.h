@@ -26,9 +26,11 @@ public:
   void step(float _time, float _step);
 
   int addRigidBodyToDW(btRigidBody* _rigidBody);
-  bool isCollision(unsigned int _index) const;
+  bool isCollision(unsigned int _index);
   void moveLeft(unsigned int _index);
   void moveRight(unsigned int _index);
+
+  bool callbackFunc();
 
   unsigned int getNumCollisionObjects()const
   {

@@ -101,6 +101,7 @@ int Physics::addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
+  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -165,17 +166,20 @@ int Physics::getCollisionShape(unsigned int _index) const
   return collisionShape->getShapeType();
 }
 
-bool Physics::isCollision(unsigned int _index) const
+bool Physics::isCollision(unsigned int _index)
 {
-  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  for(unsigned int i=0; i<getNumCollisionObjects(); i++)
+  btCollisionObject* obj1 = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btCollisionObject* obj2 = m_dynamicsWorld->getCollisionObjectArray()[_index+1];
+  if(obj1->checkCollideWith(obj2)==true)
   {
-    if(obj->checkCollideWith(m_dynamicsWorld->getCollisionObjectArray()[i]))
-    {
-      return true;
-    }
+    return 1;
   }
-  return false;
+  else
+  {
+    return 0;
+  }
+
+
 }
 
 int Physics::isStatic(unsigned int _index)
@@ -236,5 +240,4 @@ int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
   m_dynamicsWorld->addRigidBody(_rigidBody);
   return bodyIndex;
 }
-
 

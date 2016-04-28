@@ -115,22 +115,30 @@ void PhysicsLib::setMaterial(ngl::Material _mat)
   m_currentMat = _mat;
 }
 
-void PhysicsLib::movePhysicsObjLeft(int _shapeIndex)
+void PhysicsLib::moveLeft(int _shapeIndex)
 {
   return m_shapes[_shapeIndex]->moveLeft();
 }
 
-void PhysicsLib::movePhysicsObjRight(int _shapeIndex)
+void PhysicsLib::moveRight(int _shapeIndex)
 {
   return m_shapes[_shapeIndex]->moveRight();
 }
 
-void PhysicsLib::reset()
+bool PhysicsLib::collision()
 {
-  m_shapes.erase(m_shapes.begin()+40,m_shapes.end()-1);
+  for(int i=40; i<m_shapes.size(); i++)
+  {
+    m_physics.isCollision(i);
+    if(1)
+    {
+      std::cout<<"collision"<<std::endl;
+      return true;
+    }
+  }
 }
 
-void PhysicsLib::deleteCurrentShape()
+void PhysicsLib::reset()
 {
-  m_shapes.erase(m_shapes.begin()+40,m_shapes.end()-1);
+  m_shapes.erase(m_shapes.begin()+41,m_shapes.end());
 }

@@ -25,16 +25,10 @@ ngl::Mat4 Shape::getTransformMatrix()
 
 void Shape::moveLeft()
 {
-  //if(m_static)
-  {
-    m_physics->moveLeft(m_id);
-  }
+  m_physics->moveLeft(m_id);
 }
 
 void Shape::moveRight()
 {
-  //if(m_static)
-  {
-    m_physics->moveRight(m_id);
-  }
+  m_physics->moveRight(m_id);
 }

@@ -37,9 +37,10 @@ public :
   void setMaterial(ngl::Material _mat);
 
   void reset();
-  void deleteCurrentShape();
-  void movePhysicsObjLeft(int _shapeIndex);
-  void movePhysicsObjRight(int _shapeIndex);
+  void moveLeft(int _shapeIndex);
+  void moveRight(int _shapeIndex);
+
+  bool collision();
 
 private :
   PhysicsLib();

@@ -11,6 +11,7 @@ public:
   void draw();
 private:
   ngl::Vec3 m_pos;
+  unsigned int m_id;
 };
 
 #endif

@@ -9,5 +9,5 @@ Player::Player(ngl::Vec3 _pos)
 void Player::draw()
 {
   PhysicsLib *physics = PhysicsLib::instance();
-  physics->addCube(m_pos, true, ngl::Vec3(2,2,2));
+  physics->addCube(m_pos, false, ngl::Vec3(2,2,2));
 }
