@@ -421,6 +421,7 @@ void NGLScene::playerCollision()
   if(PhysicsLib::instance()->collision())
   {
     resetSim();
+    std::cout<<"working"<<std::endl;
   }
 }
 

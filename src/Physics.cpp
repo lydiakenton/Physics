@@ -50,6 +50,7 @@ int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Rea
   //rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
   rigidBody->setRollingFriction(btScalar(0.75f));
+  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -76,6 +77,7 @@ int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.3f);
   rigidBody->setRollingFriction(0.25f);
+  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -129,6 +131,7 @@ int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Re
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
+  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -168,18 +171,15 @@ int Physics::getCollisionShape(unsigned int _index) const
 
 bool Physics::isCollision(unsigned int _index)
 {
+  bool collision = false;
   btCollisionObject* obj1 = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btCollisionObject* obj2 = m_dynamicsWorld->getCollisionObjectArray()[_index+1];
   if(obj1->checkCollideWith(obj2)==true)
   {
-    return 1;
+    std::cout<<"collision"<<std::endl;
+    collision =  true;
   }
-  else
-  {
-    return 0;
-  }
-
-
+  return collision;
 }
 
 int Physics::isStatic(unsigned int _index)

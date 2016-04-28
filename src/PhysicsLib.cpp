@@ -127,15 +127,13 @@ void PhysicsLib::moveRight(int _shapeIndex)
 
 bool PhysicsLib::collision()
 {
+  bool collision;
   for(int i=40; i<m_shapes.size(); i++)
   {
-    m_physics.isCollision(i);
-    if(1)
-    {
-      std::cout<<"collision"<<std::endl;
-      return true;
-    }
+    std::cout<<"hello"<<std::endl;
+    collision = m_physics.isCollision(i);
   }
+  return collision;
 }
 
 void PhysicsLib::reset()
