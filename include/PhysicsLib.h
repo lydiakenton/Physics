@@ -38,6 +38,8 @@ public :
 
   void reset();
   void deleteCurrentShape();
+  void movePhysicsObjLeft(int _shapeIndex);
+  void movePhysicsObjRight(int _shapeIndex);
 
 private :
   PhysicsLib();

@@ -27,6 +27,8 @@ public:
 
   int addRigidBodyToDW(btRigidBody* _rigidBody);
   bool isCollision(unsigned int _index) const;
+  void moveLeft(unsigned int _index);
+  void moveRight(unsigned int _index);
 
   unsigned int getNumCollisionObjects()const
   {

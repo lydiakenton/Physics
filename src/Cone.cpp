@@ -20,6 +20,7 @@ void Cone::draw(const std::string &_shader)
   coneRotateMatrix.rotateX(-90);
   m_transform = coneRotateMatrix * m_transform;
   m_transform = coneTranslateMatrix * m_transform;
+
   m_mat.loadToShader(_shader);
   ngl::VAOPrimitives::instance()->draw("cone");
 }

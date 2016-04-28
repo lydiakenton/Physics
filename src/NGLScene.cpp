@@ -136,13 +136,14 @@ void NGLScene::initializeGL()
   glViewport(0,0,width(),height());
 
   addStairs();
+  PhysicsLib::instance()->addCube(ngl::Vec3(0, 1, 0), false, ngl::Vec3(2, 2, 2));
 
-  updatePlayerPos(0,0,0);
-  for(auto &player : m_player)
-  {
-    loadMatricesToShader();
-    player->draw();
-  }
+//  updatePlayerPos(0,0,0);
+//  for(auto &player : m_player)
+//  {
+//    loadMatricesToShader();
+//    player->draw();
+//  }
 
 }
 
@@ -360,11 +361,11 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   PhysicsLib *physics = PhysicsLib::instance();
   ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
 
-//  ngl::Random *rng = ngl::Random::instance();
-//  float rad = rng->randomPositiveNumber(2);
-//  float height = rng->randomPositiveNumber(2);
-//  float width = rng->randomPositiveNumber(2);
-//  float length = rng->randomPositiveNumber(2);
+  ngl::Random *rng = ngl::Random::instance();
+  float rad = rng->randomPositiveNumber(2);
+  float height = rng->randomPositiveNumber(2);
+  float width = rng->randomPositiveNumber(2);
+  float length = rng->randomPositiveNumber(2);
 
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
@@ -382,12 +383,12 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_N : showNormal(); break;
   //clear screen
   case Qt::Key_C : resetSim(); break;
-//  // create sphere
+  // create sphere
 //  case Qt::Key_1 : physics->addSphere(ngl::Vec3(0, 30, -20), false, rad); break;
 //  // create cone
 //  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0); break; //used rad twice to make cones uniform. trying to get them to not clip through floor
 //  //create dynamic box
-//  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 30, -20), false, ngl::Vec3(width, height, length)); break;
+//  case Qt::Key_3 : physics->addCube(ngl::Vec3(0, 3, 0), false, ngl::Vec3(width, height, length)); break;
 //  //create dynamic capsule
 //  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
 //  case Qt::Key_4 : physics->addCapsule(ngl::Vec3(0,30, -20), false, rad, rad); break;
@@ -400,23 +401,30 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
     break;
   case Qt::Key_Down : physics->setMaterial(ngl::STDMAT::PEWTER); break;
 
+//  case Qt::Key_Left :
+//    updatePlayerPos(-1,0,0);
+//    for(auto &player : m_player)
+//    {
+//      loadMatricesToShader();
+//      player->draw();
+//      //removePlayer();
+//    }
+//  break;
+//  case Qt::Key_Right :
+//    updatePlayerPos(1,0,0);
+//    for(auto &player : m_player)
+//    {
+//      loadMatricesToShader();
+//      player->draw();
+//      //removePlayer();
+//    }
+//  break;
   case Qt::Key_Left :
-    updatePlayerPos(-1,0,0);
-    for(auto &player : m_player)
-    {
-      loadMatricesToShader();
-      player->draw();
-      removePlayer();
-    }
+    std::cout<<"num of shapes: "<<physics->getNumOfShapes()<<std::endl;
+    physics->movePhysicsObjLeft(40);
   break;
   case Qt::Key_Right :
-    updatePlayerPos(1,0,0);
-    for(auto &player : m_player)
-    {
-      loadMatricesToShader();
-      player->draw();
-      removePlayer();
-    }
+    physics->movePhysicsObjRight(40);
   break;
 
   default : break;

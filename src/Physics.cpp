@@ -186,6 +186,22 @@ int Physics::isStatic(unsigned int _index)
   return rigidBody->isStaticObject();
 }
 
+void Physics::moveLeft(unsigned int _index)
+{
+  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
+  _rigidBody->activate(true);
+  _rigidBody->applyCentralImpulse(btVector3(-5.0f,0.0f,0.0f));
+}
+
+void Physics::moveRight(unsigned int _index)
+{
+  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
+  _rigidBody->activate(true);
+  _rigidBody->applyCentralImpulse(btVector3(5.0f,0.0f,0.0f));
+}
+
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];

@@ -115,6 +115,16 @@ void PhysicsLib::setMaterial(ngl::Material _mat)
   m_currentMat = _mat;
 }
 
+void PhysicsLib::movePhysicsObjLeft(int _shapeIndex)
+{
+  return m_shapes[_shapeIndex]->moveLeft();
+}
+
+void PhysicsLib::movePhysicsObjRight(int _shapeIndex)
+{
+  return m_shapes[_shapeIndex]->moveRight();
+}
+
 void PhysicsLib::reset()
 {
   m_shapes.erase(m_shapes.begin()+40,m_shapes.end()-1);

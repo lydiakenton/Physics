@@ -21,6 +21,8 @@ public:
   int getShapeID();
   bool isStatic() {return m_static;}
   virtual ngl::Mat4 getTransformMatrix();
+  void moveLeft();
+  void moveRight();
   //void setColour();
   //int getShapeType() const {return m_shapeType;}
 

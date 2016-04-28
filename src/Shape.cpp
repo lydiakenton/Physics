@@ -22,3 +22,19 @@ ngl::Mat4 Shape::getTransformMatrix()
 
   return transformation;
 }
+
+void Shape::moveLeft()
+{
+  //if(m_static)
+  {
+    m_physics->moveLeft(m_id);
+  }
+}
+
+void Shape::moveRight()
+{
+  //if(m_static)
+  {
+    m_physics->moveRight(m_id);
+  }
+}
