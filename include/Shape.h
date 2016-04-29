@@ -21,21 +21,24 @@ public:
   int getShapeID();
   bool isStatic() {return m_static;}
   virtual ngl::Mat4 getTransformMatrix();
+  //void move();
   void moveLeft();
   void moveRight();
   ngl::Mat4 fixCone();
   //void setColour();
-  //int getShapeType() const {return m_shapeType;}
+  int getShapeType();
 
 protected:
 
   unsigned int m_id;
   ngl::Material m_mat;
+  //ngl::Vec3 m_dir;
 
   ngl::Mat4 m_scaleMat;
 
   bool m_static;
 
+  int m_shapeType;
   Physics *m_physics;
 };
 

@@ -20,7 +20,7 @@ public :
   void setGravity(float _x,float _y,float _z);
 
   const std::vector<std::unique_ptr<Shape>>& getShapes(){return m_shapes;}
-  //const std::vector<std::unique_ptr<Cone>>& getCones(){return m_cone;}
+  const std::vector<std::unique_ptr<Cone>>& getCones(){return m_cones;}
 
   void addGroundPlane(ngl::Real _yPos);
   void addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size);
@@ -33,15 +33,16 @@ public :
 
   void drawShape(int _shapeIndex, const std::string &_shader);
   int getNumOfShapes();
-  //int getNumOfCones();
+  int getNumOfCones();
 
   void drawGroundPlane(const std::string &_shader);
-  //void drawCone(int _coneIndex, const std::string &_shader);
+  void drawCone(int _shapeIndex, const std::string &_shader);
   void step(float _time, float _step);
 
   void setMaterial(ngl::Material _mat);
 
-  void reset();
+  void reset(int _shapeIndex);
+  //void move(int _shapeIndex, ngl::Vec3 _dir);
   void moveLeft(int _shapeIndex);
   void moveRight(int _shapeIndex);
 
@@ -56,7 +57,7 @@ private :
   std::unique_ptr<GroundPlane> m_groundPlane;
 
   std::vector<std::unique_ptr<Shape>> m_shapes;
-  //std::vector<std::unique_ptr<Cone>> m_cone;
+  std::vector<std::unique_ptr<Cone>> m_cones;
 
   ngl::Material m_currentMat;
 };

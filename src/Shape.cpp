@@ -37,10 +37,31 @@ ngl::Mat4 Shape::fixCone()
   return transform;
 }
 
+int Shape::getShapeType()
+{
+  switch(m_physics->getCollisionShape(m_id))
+  {
+    case SPHERE_SHAPE_PROXYTYPE:
+      return 0; break;
+    case CONE_SHAPE_PROXYTYPE:
+      return 1; break;
+    case BOX_SHAPE_PROXYTYPE:
+      return 2; break;
+    case CAPSULE_SHAPE_PROXYTYPE:
+      return 3; break;
+  }
+}
+
+//void Shape::move()
+//{
+//  m_physics->move(m_id, m_dir);
+//}
+
 void Shape::moveLeft()
 {
   m_physics->moveLeft(m_id);
 }
+
 
 void Shape::moveRight()
 {

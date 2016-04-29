@@ -46,8 +46,8 @@ void PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real
     mass = ngl::PI*_rad*_rad*(_height/3);
   }
   int coneIndex = m_physics.addCone(_pos,mass,_static,_rad,_height);
-  //m_cone.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
-  m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
+  m_cones.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
+  //m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
 }
 
 void PhysicsLib::addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
@@ -93,17 +93,13 @@ void PhysicsLib::step(float _time, float _step)
 
 ngl::Mat4 PhysicsLib::getShapeTransformMatrix(int _shapeIndex)
 {
-  for(int i=0; i<m_shapes.size(); i++)
-  {
-    if(i==CONE_SHAPE_PROXYTYPE)
-      return m_shapes[_shapeIndex]->getTransformMatrix();
-  }
+  return m_shapes[_shapeIndex]->getTransformMatrix();
 }
 
 ngl::Mat4 PhysicsLib::getConeTransformMatrix(int _shapeIndex)
 {
-  //return m_cone[coneIndex]->fixCone();
-  return m_shapes[_shapeIndex]->fixCone();
+  return m_cones[_shapeIndex]->fixCone();
+  //return m_shapes[_shapeIndex]->fixCone();
 }
 
 void PhysicsLib::drawShape(int _shapeIndex, const std::string &_shader)
@@ -116,25 +112,30 @@ void PhysicsLib::drawGroundPlane(const std::string &_shader)
   m_groundPlane->draw(_shader);
 }
 
-//void PhysicsLib::drawCone(int _coneIndex, const std::string &_shader)
-//{
-//  return m_cone[_coneIndex]->draw(_shader);
-//}
+void PhysicsLib::drawCone(int _shapeIndex, const std::string &_shader)
+{
+  return m_cones[_shapeIndex]->draw(_shader);
+}
 
 int PhysicsLib::getNumOfShapes()
 {
   return m_shapes.size();
 }
 
-//int PhysicsLib::getNumOfCones()
-//{
-//  return m_cone.size();
-//}
+int PhysicsLib::getNumOfCones()
+{
+  return m_cones.size();
+}
 
 void PhysicsLib::setMaterial(ngl::Material _mat)
 {
   m_currentMat = _mat;
 }
+
+//void PhysicsLib::move(int _shapeIndex, ngl::Vec3 _dir)
+//{
+//  return m_physics.move(_shapeIndex, _dir);
+//}
 
 void PhysicsLib::moveLeft(int _shapeIndex)
 {
@@ -157,7 +158,9 @@ bool PhysicsLib::collision()
   return collision;
 }
 
-void PhysicsLib::reset()
+void PhysicsLib::reset(int _shapeIndex)
 {
   m_shapes.erase(m_shapes.begin()+41,m_shapes.end());
+  m_cones.erase(m_cones.begin(),m_cones.end());
+  m_physics.moveToOrigin(_shapeIndex);
 }

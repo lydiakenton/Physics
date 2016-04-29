@@ -105,8 +105,8 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,0,20);
-  ngl::Vec3 to = ngl::Vec3::zero();
+  ngl::Vec3 from(0,5,15);
+  ngl::Vec3 to = ngl::Vec3(0,5,0);
   ngl::Vec3 up = ngl::Vec3::up();
   // now load to our new camera
   m_cam.set(from,to,up);
@@ -218,19 +218,15 @@ void NGLScene::drawPhysicsShapes()
   for(int i=0; i< physics->getNumOfShapes(); i++)
   {
     m_bodyTransform = physics->getShapeTransformMatrix(i);
-    //m_bodyTransform = physics->getConeTransformMatrix(i);
-    loadMatricesToShader();
-    physics->drawShape(i,"material");
-    m_bodyTransform = physics->getConeTransformMatrix(i);
     loadMatricesToShader();
     physics->drawShape(i,"material");
   }
-//  for(int i=0; i< physics->getNumOfCones(); i++)
-//  {
-//    m_bodyTransform = physics->getConeTransformMatrix(i);
-//    loadMatricesToShader();
-//    physics->drawShape(i,"material");
-//  }
+  for(int i=0; i< physics->getNumOfCones(); i++)
+  {
+    m_bodyTransform = physics->getConeTransformMatrix(i);
+    loadMatricesToShader();
+    physics->drawCone(i,"material");
+  }
   m_bodyTransform.identity();
   loadMatricesToShader();
   physics->drawGroundPlane("material");
@@ -391,8 +387,6 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 
   case Qt::Key_1 : addPhysicsShapes(); break;
 
-  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0); break;
-
   case Qt::Key_Up :
     mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
     physics->setMaterial(mat);
@@ -414,7 +408,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 
 void NGLScene::resetSim()
 {
-  PhysicsLib::instance()->reset();
+  PhysicsLib::instance()->reset(40);
 }
 
 void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)

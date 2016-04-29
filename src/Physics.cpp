@@ -195,13 +195,23 @@ int Physics::isStatic(unsigned int _index)
   return rigidBody->isStaticObject();
 }
 
+//void Physics::move(unsigned int _index, ngl::Vec3 _dir)
+//{
+//  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+//  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
+//  _rigidBody->activate(true);
+//  _rigidBody->setRestitution(0.0f);
+//  _rigidBody->setDamping(0.8f, 0.8f);
+//  _rigidBody->applyCentralImpulse(btVector3(_dir.m_x,_dir.m_y,_dir.m_z));
+//}
+
 void Physics::moveLeft(unsigned int _index)
 {
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
   _rigidBody->setRestitution(0.0f);
-  _rigidBody->setDamping(0.8f, 0.8f);
+  _rigidBody->setDamping(0.8f,0.8f);
   _rigidBody->applyCentralImpulse(btVector3(-8.0f,0.0f,0.0f));
 }
 
@@ -213,6 +223,16 @@ void Physics::moveRight(unsigned int _index)
   _rigidBody->setRestitution(0.0f);
   _rigidBody->setDamping(0.8f,0.8f);
   _rigidBody->applyCentralImpulse(btVector3(8.0f,0.0f,0.0f));
+}
+
+void Physics::moveToOrigin(unsigned int _index)
+{
+  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
+  _rigidBody->activate(true);
+  btTransform transform;
+  transform.setOrigin(btVector3(0,1,0));
+  _rigidBody->translate(btVector3(0,1,0));
 }
 
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
