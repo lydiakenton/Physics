@@ -11,3 +11,13 @@ void Player::draw()
   PhysicsLib *physics = PhysicsLib::instance();
   physics->addCube(m_pos, false, ngl::Vec3(2,2,2));
 }
+
+//void Player::moveLeft()
+//{
+//  PhysicsLib::instance()->moveLeft();
+//}
+
+//void Player::moveRight()
+//{
+//  PhysicsLib::instance()->moveRight();
+//}

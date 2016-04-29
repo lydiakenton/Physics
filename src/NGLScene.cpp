@@ -218,9 +218,19 @@ void NGLScene::drawPhysicsShapes()
   for(int i=0; i< physics->getNumOfShapes(); i++)
   {
     m_bodyTransform = physics->getShapeTransformMatrix(i);
+    //m_bodyTransform = physics->getConeTransformMatrix(i);
+    loadMatricesToShader();
+    physics->drawShape(i,"material");
+    m_bodyTransform = physics->getConeTransformMatrix(i);
     loadMatricesToShader();
     physics->drawShape(i,"material");
   }
+//  for(int i=0; i< physics->getNumOfCones(); i++)
+//  {
+//    m_bodyTransform = physics->getConeTransformMatrix(i);
+//    loadMatricesToShader();
+//    physics->drawShape(i,"material");
+//  }
   m_bodyTransform.identity();
   loadMatricesToShader();
   physics->drawGroundPlane("material");
@@ -380,6 +390,8 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_C : resetSim(); break;
 
   case Qt::Key_1 : addPhysicsShapes(); break;
+
+  case Qt::Key_2 : physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0); break;
 
   case Qt::Key_Up :
     mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));

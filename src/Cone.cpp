@@ -11,15 +11,26 @@ Cone::Cone(int _id, ngl::Real _rad, ngl::Real _height, ngl::Material _mat, Physi
 
 void Cone::draw(const std::string &_shader)
 {
-  m_transform = m_physics->getTransformMatrix(m_id);
+  //m_transform = m_physics->getTransformMatrix(m_id);
 
-  ngl::Mat4 coneRotateMatrix;
-  ngl::Mat4 coneTranslateMatrix;
+//  std::cout << "getting matrix: "<<std::endl;
+//  for(int j=0; j<4; j++)
+//  {
+//    for(int k=0; k<4; k++)
+//    {
+//      std::cout << m_transform.m_m[j][k]<< ", ";
+//    }
+//    std::cout << std::endl;
+//  }
+//  std::cout << std::endl;
 
-  coneTranslateMatrix.translate(0.0f,0.0f,-0.25f);
-  coneRotateMatrix.rotateX(-90);
-  m_transform = coneRotateMatrix * m_transform;
-  m_transform = coneTranslateMatrix * m_transform;
+//  ngl::Mat4 coneRotateMatrix;
+//  ngl::Mat4 coneTranslateMatrix;
+
+//  coneTranslateMatrix.translate(0.0f,0.0f,-0.25f);
+//  coneRotateMatrix.rotateX(-90);
+//  m_transform = coneRotateMatrix * m_transform;
+//  m_transform = coneTranslateMatrix * m_transform;
 
   m_mat.loadToShader(_shader);
   ngl::VAOPrimitives::instance()->draw("cone");

@@ -23,6 +23,20 @@ ngl::Mat4 Shape::getTransformMatrix()
   return transformation;
 }
 
+ngl::Mat4 Shape::fixCone()
+{
+  ngl::Mat4 transform = m_physics->getTransformMatrix(m_id);
+  ngl::Mat4 coneRotateMatrix;
+  ngl::Mat4 coneTranslateMatrix;
+
+  coneTranslateMatrix.translate(0.0f,0.0f,-0.5f);
+  coneRotateMatrix.rotateX(-90);
+  transform = coneRotateMatrix * transform;
+  transform = coneTranslateMatrix * transform;
+
+  return transform;
+}
+
 void Shape::moveLeft()
 {
   m_physics->moveLeft(m_id);

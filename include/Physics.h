@@ -30,8 +30,6 @@ public:
   void moveLeft(unsigned int _index);
   void moveRight(unsigned int _index);
 
-  bool callbackFunc();
-
   unsigned int getNumCollisionObjects()const
   {
     return m_dynamicsWorld->getNumCollisionObjects();

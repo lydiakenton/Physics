@@ -11,7 +11,7 @@ public:
 private :
   ngl::Real m_rad;
   ngl::Real m_height;
-  ngl::Mat4 m_transform;
+  //ngl::Mat4 m_transform;
 };
 
 #endif

@@ -46,6 +46,7 @@ void PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real
     mass = ngl::PI*_rad*_rad*(_height/3);
   }
   int coneIndex = m_physics.addCone(_pos,mass,_static,_rad,_height);
+  //m_cone.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
   m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
 }
 
@@ -92,7 +93,17 @@ void PhysicsLib::step(float _time, float _step)
 
 ngl::Mat4 PhysicsLib::getShapeTransformMatrix(int _shapeIndex)
 {
-  return m_shapes[_shapeIndex]->getTransformMatrix();
+  for(int i=0; i<m_shapes.size(); i++)
+  {
+    if(i==CONE_SHAPE_PROXYTYPE)
+      return m_shapes[_shapeIndex]->getTransformMatrix();
+  }
+}
+
+ngl::Mat4 PhysicsLib::getConeTransformMatrix(int _shapeIndex)
+{
+  //return m_cone[coneIndex]->fixCone();
+  return m_shapes[_shapeIndex]->fixCone();
 }
 
 void PhysicsLib::drawShape(int _shapeIndex, const std::string &_shader)
@@ -105,10 +116,20 @@ void PhysicsLib::drawGroundPlane(const std::string &_shader)
   m_groundPlane->draw(_shader);
 }
 
+//void PhysicsLib::drawCone(int _coneIndex, const std::string &_shader)
+//{
+//  return m_cone[_coneIndex]->draw(_shader);
+//}
+
 int PhysicsLib::getNumOfShapes()
 {
   return m_shapes.size();
 }
+
+//int PhysicsLib::getNumOfCones()
+//{
+//  return m_cone.size();
+//}
 
 void PhysicsLib::setMaterial(ngl::Material _mat)
 {

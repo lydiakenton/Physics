@@ -50,7 +50,7 @@ int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Rea
   //rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
   rigidBody->setRollingFriction(btScalar(0.75f));
-  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -77,7 +77,12 @@ int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.3f);
   rigidBody->setRollingFriction(0.25f);
-  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+
+//  btTransform centerOfMass;
+//  centerOfMass.setOrigin(btVector3(_pos.m_x,_pos.m_y/2.0f,_pos.m_z));
+//  rigidBody->setCenterOfMassTransform(centerOfMass);
+
+  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -131,7 +136,7 @@ int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Re
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
-  rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -195,7 +200,9 @@ void Physics::moveLeft(unsigned int _index)
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
-  _rigidBody->applyCentralImpulse(btVector3(-5.0f,0.0f,0.0f));
+  _rigidBody->setRestitution(0.0f);
+  _rigidBody->setDamping(0.8f, 0.8f);
+  _rigidBody->applyCentralImpulse(btVector3(-8.0f,0.0f,0.0f));
 }
 
 void Physics::moveRight(unsigned int _index)
@@ -203,7 +210,9 @@ void Physics::moveRight(unsigned int _index)
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
-  _rigidBody->applyCentralImpulse(btVector3(5.0f,0.0f,0.0f));
+  _rigidBody->setRestitution(0.0f);
+  _rigidBody->setDamping(0.8f,0.8f);
+  _rigidBody->applyCentralImpulse(btVector3(8.0f,0.0f,0.0f));
 }
 
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)

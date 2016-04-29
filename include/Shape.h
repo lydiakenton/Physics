@@ -23,6 +23,7 @@ public:
   virtual ngl::Mat4 getTransformMatrix();
   void moveLeft();
   void moveRight();
+  ngl::Mat4 fixCone();
   //void setColour();
   //int getShapeType() const {return m_shapeType;}
 
