@@ -11,6 +11,9 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
+#include <QApplication>
+#include <qobject.h>
+#include <QtGui>
 #include <ngl/Random.h>
 #include <stdlib.h>
 #include "PhysicsLib.h"
@@ -39,6 +42,10 @@ NGLScene::NGLScene()
 
   m_playerPos.set(0,1,0);
   m_player.push_back( std::unique_ptr<Player>(new Player(m_playerPos)));
+
+  QTimer *timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(addPhysicsShapes));
+    timer->start(1000);
 }
 
 NGLScene::~NGLScene()
@@ -206,9 +213,9 @@ void NGLScene::paintGL()
 void NGLScene::addStairs()
 {
     PhysicsLib *physics = PhysicsLib::instance();
-    for(int pos=20; pos<60; pos++)
+    for(int pos=10; pos<50; pos++)
     {
-      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(15, 0.5, 2));
+      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(25, 0.5, 2));
     }
 }
 
@@ -241,17 +248,19 @@ void NGLScene::addPhysicsShapes()
   float height = rng->randomPositiveNumber(2);
   float width = rng->randomPositiveNumber(2);
   float length = rng->randomPositiveNumber(2);
+  float pos = rng->randomNumber(5);
 
-  physics->addSphere(ngl::Vec3(0, 30, -20), false, rad);
+
+  physics->addSphere(ngl::Vec3(pos, 30, -20), false, rad);
 
   //used rad twice to make cones uniform. trying to get them to not clip through floor
-  physics->addCone(ngl::Vec3(0, 30, -20), false, 1.0, 1.0);
+  physics->addCone(ngl::Vec3(pos, 30, -20), false, 1.0, 1.0);
 
-  physics->addCube(ngl::Vec3(0, 30, -20), false, ngl::Vec3(width, height, length));
+  physics->addCube(ngl::Vec3(pos, 30, -20), false, ngl::Vec3(width, height, length));
 
   //create dynamic capsule
   //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
-  physics->addCapsule(ngl::Vec3(0,30, -20), false, rad, rad);
+  physics->addCapsule(ngl::Vec3(pos, 30, -20), false, rad, rad);
 }
 
 void NGLScene::renderTextToScreen()

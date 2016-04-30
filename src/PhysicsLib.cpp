@@ -162,5 +162,5 @@ void PhysicsLib::reset(int _shapeIndex)
 {
   m_shapes.erase(m_shapes.begin()+41,m_shapes.end());
   m_cones.erase(m_cones.begin(),m_cones.end());
-  m_physics.moveToOrigin(_shapeIndex);
+  //m_physics.moveToOrigin(_shapeIndex);
 }

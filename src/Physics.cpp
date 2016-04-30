@@ -78,10 +78,6 @@ int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real 
   rigidBody->setRestitution(0.3f);
   rigidBody->setRollingFriction(0.25f);
 
-//  btTransform centerOfMass;
-//  centerOfMass.setOrigin(btVector3(_pos.m_x,_pos.m_y/2.0f,_pos.m_z));
-//  rigidBody->setCenterOfMassTransform(centerOfMass);
-
   //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
@@ -225,15 +221,15 @@ void Physics::moveRight(unsigned int _index)
   _rigidBody->applyCentralImpulse(btVector3(8.0f,0.0f,0.0f));
 }
 
-void Physics::moveToOrigin(unsigned int _index)
-{
-  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
-  _rigidBody->activate(true);
-  btTransform transform;
-  transform.setOrigin(btVector3(0,1,0));
-  _rigidBody->translate(btVector3(0,1,0));
-}
+//void Physics::moveToOrigin(unsigned int _index)
+//{
+//  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+//  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
+//  _rigidBody->activate(true);
+//  btTransform transform;
+//  transform.setOrigin(btVector3(0,1,0));
+//  _rigidBody->translate(btVector3(0,1,0));
+//}
 
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 {

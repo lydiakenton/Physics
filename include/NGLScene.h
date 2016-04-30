@@ -10,6 +10,7 @@
 #include <btBulletDynamicsCommon.h>
 #include <QOpenGLWindow>
 #include <QElapsedTimer>
+#include <QApplication>
 #include <memory>
 #include "Player.h"
 //----------------------------------------------------------------------------------------------------------------------
@@ -175,6 +176,8 @@ private:
     bool m_animate;
 
     void timerEvent(QTimerEvent *);
+
+    //QTimer *m_timer;
 
 };
 
