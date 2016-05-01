@@ -12,6 +12,7 @@
 #include <QElapsedTimer>
 #include <QApplication>
 #include <memory>
+#include <QTime>
 #include "Player.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file NGLScene.h
@@ -116,6 +117,7 @@ private:
     int m_height;
 
     ngl::Text *m_text;
+    ngl::Text *m_largeText;
 
     ngl::Mat4 m_bodyTransform;
 
@@ -123,6 +125,8 @@ private:
 
     int m_updateTimerID;
     int m_shapeDropTimerID;
+
+    int m_shapeDropRate;
 
     float m_floorHeight;
     //----------------------------------------------------------------------------------------------------------------------
@@ -176,6 +180,10 @@ private:
     bool m_animate;
 
     void timerEvent(QTimerEvent *);
+
+    QTime m_time;
+
+    int m_score;
 };
 
 

@@ -23,7 +23,7 @@ void Shape::push(ngl::Vec3 m_dir)
   m_physics->push(m_id, m_dir);
 }
 
-void Shape::decrementID()
-{
-  m_id--;
-}
+//void Shape::decrementID()
+//{
+//  m_id--;
+//}

@@ -7,6 +7,7 @@ Player::Player(ngl::Vec3 _pos)
  m_left = false;
  m_right = false;
  m_speed = 4;
+ m_alive = true;
 }
 
 void Player::init()
@@ -52,4 +53,14 @@ ngl::Vec3 Player::getPosition()
 int Player::getID()
 {
   return m_id;
+}
+
+bool Player::isAlive()
+{
+  return m_alive;
+}
+
+void Player::kill()
+{
+  m_alive = false;
 }

@@ -13,6 +13,8 @@ public:
   void update();
   ngl::Vec3 getPosition();
   int getID();
+  bool isAlive();
+  void kill();
 
 private:
   ngl::Vec3 m_pos;
@@ -20,6 +22,7 @@ private:
   bool m_right;
   float m_speed;
   unsigned int m_id;
+  bool m_alive;
 };
 
 #endif

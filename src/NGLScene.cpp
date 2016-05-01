@@ -12,6 +12,7 @@
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
 #include <QTime>
+#include <cmath>
 
 #include <ngl/Random.h>
 #include <stdlib.h>
@@ -40,6 +41,8 @@ NGLScene::NGLScene()
   m_height=720;
   m_floorHeight = 25;
 
+  m_shapeDropRate = 2048;
+  m_score = 0;
 }
 
 NGLScene::~NGLScene()
@@ -134,6 +137,8 @@ void NGLScene::initializeGL()
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
+  m_largeText = new ngl::Text(QFont("Helvetica", 60));
+
   glViewport(0,0,width(),height());
 
   ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
@@ -155,7 +160,9 @@ void NGLScene::initializeGL()
   ngl::Random::instance()->setSeed(QTime::currentTime().msecsSinceStartOfDay());
 
   m_updateTimerID = startTimer(10);
-  m_shapeDropTimerID = startTimer(1000);
+  m_shapeDropTimerID = startTimer(m_shapeDropRate);
+
+  m_time = QTime::currentTime();
 }
 
 void NGLScene::loadMatricesToShader()
@@ -281,31 +288,46 @@ void NGLScene::addPhysicsShape()
     float height = rng->randomPositiveNumber(1) + 1;
     physics->addCone(ngl::Vec3(xPos, yPos, zPos), false, rad, height);
   }
-
 }
 
 void NGLScene::renderTextToScreen()
 {
-  PhysicsLib *physics = PhysicsLib::instance();
-  unsigned int bodies = physics->getNumOfShapes();
-
-  m_text->setColour(ngl::Colour(1,1,1));
-  m_text->renderText(10,12,"Use the arrow keys to move");
-  m_text->renderText(10,12*3,"Press Esc to exit");
-  m_text->renderText(10,12*9, "Player transformation Matrix: ");
-
-  QString text2 = QString("Number of bodies: %2").arg(bodies-1);
-  m_text->renderText(10,12*7,text2);
-  m_bodyTransform = physics->getShapeTransformMatrix(m_player->getID());
   QString text;
-
-  for(int j=0; j<4; j++)
+  PhysicsLib *physics = PhysicsLib::instance();
+  if(m_player->isAlive())
   {
-    for(int k=0; k<4; k++)
+    unsigned int bodies = physics->getNumOfShapes();
+
+    m_text->setColour(ngl::Colour(1,1,1));
+    m_text->renderText(10,12,"Use the arrow keys to move");
+    m_text->renderText(10,12*3,"Press Esc to exit");
+
+    text = QString("Level: %1").arg(log2(2048/m_shapeDropRate));
+    m_text->renderText(10,12*5, text);
+
+    text = QString("Number of bodies: %1").arg(bodies-1);
+    m_text->renderText(10,12*7,text);
+
+    m_text->renderText(10,12*9, "Player transformation Matrix: ");
+    m_bodyTransform = physics->getShapeTransformMatrix(m_player->getID());
+
+    for(int j=0; j<4; j++)
     {
-      text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-      m_text->renderText(10+(75*j),130+(24*k),text);
+      for(int k=0; k<4; k++)
+      {
+        text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
+        m_text->renderText(10+(75*j),130+(24*k),text);
+      }
     }
+    text = QString("Score: %1").arg(m_score);
+    m_text->renderText(10,12*23,text);
+  }
+  else
+  {
+    m_largeText->renderText(m_height/2.3f, m_width/3.5f, "YOU LOSE");
+    text = QString("score: %1").arg(m_score);
+    m_largeText->renderText(m_height/2.3f, m_width/3.5f+80, text);
+
   }
 }
 
@@ -442,18 +464,31 @@ void NGLScene::timerEvent(QTimerEvent *_e)
   {
     if(m_animate==true)
     {
-      PhysicsLib::instance()->step(1.0/60,10);
-      m_player->update();
-      if((m_player->getPosition())[1] < m_floorHeight-1)
+      if(m_player->isAlive())
       {
-
+        PhysicsLib::instance()->step(1.0/60,10);
+        if((m_player->getPosition())[1] < m_floorHeight-1)
+        {
+          m_player->kill();
+        }
+        m_player->update();
+        m_score = m_time.elapsed()/1000;
+      }
+      else
+      {
+        PhysicsLib::instance()->step(1.0/240,10);
       }
     }
     update();
   }
-  else if(_e->timerId() == m_shapeDropTimerID)
+  else if(_e->timerId() == m_shapeDropTimerID && m_player->isAlive())
   {
     addPhysicsShape();
-    //PhysicsLib::instance()->removeShape(2);
+    if((PhysicsLib::instance()->getNumOfShapes() % 20) * log2(2048/m_shapeDropRate) == 0)
+    {
+      if(m_shapeDropRate > 256) m_shapeDropRate /= 2;
+      killTimer(m_shapeDropTimerID);
+      m_shapeDropTimerID = startTimer(m_shapeDropRate);
+    }
   }
 }

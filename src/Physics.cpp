@@ -223,8 +223,6 @@ ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 void Physics::step(float _time, float _step)
 {
   m_dynamicsWorld->stepSimulation(_time,_step);
-  std::cout<< m_dynamicsWorld->getNumCollisionObjects() <<std::endl;
-
 }
 
 int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
@@ -233,10 +231,3 @@ int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
   m_dynamicsWorld->addRigidBody(_rigidBody);
   return bodyIndex;
 }
-
-//void Physics::deleteBody(unsigned int _index)
-//{
-//  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-//  m_dynamicsWorld->removeCollisionObject(obj);
-//  delete obj;
-//}
