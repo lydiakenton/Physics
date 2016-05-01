@@ -122,6 +122,7 @@ void NGLScene::initializeGL()
   PhysicsLib *physics = PhysicsLib::instance();
   physics->init();
 
+
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
   // transformations
@@ -145,7 +146,7 @@ void NGLScene::initializeGL()
   mat.setDiffuse(ngl::Colour (0.5,0.1,0.8));
   physics->setMaterial(mat);
 
-
+  // add floor
   physics->addCube(ngl::Vec3(0, m_floorHeight/2, 0), true, ngl::Vec3(25, m_floorHeight, 5));
 
 

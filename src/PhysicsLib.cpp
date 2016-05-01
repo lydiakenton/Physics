@@ -134,3 +134,18 @@ void PhysicsLib::push(int _shapeIndex, ngl::Vec3 _dir)
 //    m_shapes[i]->decrementID();
 //  }
 //}
+
+//reset()
+//{
+  //m_physics = Physics();
+  //m_shapes.resize(0);
+//}
+
+
+
+
+
+
+
+
+
