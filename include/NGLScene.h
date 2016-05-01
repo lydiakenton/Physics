@@ -66,13 +66,9 @@ class NGLScene : public QOpenGLWindow
 
     void removePlayer();
 
-    void addStairs();
+    void addStairs(float _floorHeight);
 
-    void addPhysicsShapes();
-
-    void updatePlayerPos(float _dx, float _dy, float _dz);
-
-    void playerCollision();
+    void addPhysicsShape();
 
 private:
     float m_x;
@@ -123,10 +119,12 @@ private:
 
     ngl::Mat4 m_bodyTransform;
 
-    std::vector<std::unique_ptr<Player>> m_player;
+    std::unique_ptr<Player> m_player;
 
-    ngl::Vec3 m_playerPos;
+    int m_updateTimerID;
+    int m_shapeDropTimerID;
 
+    float m_floorHeight;
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief used to store the global mouse transforms
     //----------------------------------------------------------------------------------------------------------------------
@@ -148,6 +146,8 @@ private:
     /// @param [in] _event the Qt event to query for size etc
     //----------------------------------------------------------------------------------------------------------------------
     void keyPressEvent(QKeyEvent *_event);
+
+    void keyReleaseEvent(QKeyEvent *_event);
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief this method is called every time a mouse is moved
     /// @param _event the Qt Event structure
@@ -176,9 +176,6 @@ private:
     bool m_animate;
 
     void timerEvent(QTimerEvent *);
-
-    //QTimer *m_timer;
-
 };
 
 

@@ -9,29 +9,28 @@ Cone::Cone(int _id, ngl::Real _rad, ngl::Real _height, ngl::Material _mat, Physi
 
 }
 
-void Cone::draw(const std::string &_shader)
+void Cone::draw()
 {
-  //m_transform = m_physics->getTransformMatrix(m_id);
-
-//  std::cout << "getting matrix: "<<std::endl;
-//  for(int j=0; j<4; j++)
-//  {
-//    for(int k=0; k<4; k++)
-//    {
-//      std::cout << m_transform.m_m[j][k]<< ", ";
-//    }
-//    std::cout << std::endl;
-//  }
-//  std::cout << std::endl;
-
-//  ngl::Mat4 coneRotateMatrix;
-//  ngl::Mat4 coneTranslateMatrix;
-
-//  coneTranslateMatrix.translate(0.0f,0.0f,-0.25f);
-//  coneRotateMatrix.rotateX(-90);
-//  m_transform = coneRotateMatrix * m_transform;
-//  m_transform = coneTranslateMatrix * m_transform;
-
-  m_mat.loadToShader(_shader);
+  m_mat.loadToShader("material");
   ngl::VAOPrimitives::instance()->draw("cone");
+}
+
+ngl::Mat4 Cone::getTransformMatrix()
+{
+  ngl::Mat4 transformation = m_physics->getTransformMatrix(m_id);
+
+  // translate and rotate
+  ngl::Mat4 offsetTransMatrix;
+  offsetTransMatrix.translate(0.0f, -m_height/2.0f, 0.0f);
+  transformation = offsetTransMatrix * transformation;
+
+  // scale
+  transformation = m_scaleMat * transformation;
+
+  // offset rotation, so ngl and bt agree about rotation
+  ngl::Mat4 offsetRotMatrix;
+  offsetRotMatrix.rotateX(-90);
+  transformation = offsetRotMatrix * transformation;
+
+  return transformation;
 }

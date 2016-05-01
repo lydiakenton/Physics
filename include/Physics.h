@@ -26,11 +26,9 @@ public:
   void step(float _time, float _step);
 
   int addRigidBodyToDW(btRigidBody* _rigidBody);
-  bool isCollision(unsigned int _index);
-  //void move(unsigned int _index, ngl::Vec3 _dir);
-  void moveLeft(unsigned int _index);
-  void moveRight(unsigned int _index);
-  void moveToOrigin(unsigned int _index);
+  void push(unsigned int _index, ngl::Vec3 _dir);
+  void moveToOrigin(unsigned int _index, ngl::Vec3 _pos);
+  //void deleteBody(unsigned int _index);
 
   unsigned int getNumCollisionObjects()const
   {

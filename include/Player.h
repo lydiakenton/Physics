@@ -7,10 +7,18 @@ class Player
 {
 public:
   Player(ngl::Vec3 _pos);
-  void setPos(const ngl::Vec3 &_v){m_pos=_v;}
-  void draw();
+  void init();
+  void setLeft(bool _left);
+  void setRight(bool _right);
+  void update();
+  ngl::Vec3 getPosition();
+  int getID();
+
 private:
   ngl::Vec3 m_pos;
+  bool m_left;
+  bool m_right;
+  float m_speed;
   unsigned int m_id;
 };
 

@@ -8,9 +8,8 @@ Sphere::Sphere(int _id, ngl::Real _rad, ngl::Material _mat, Physics *_physics, b
   m_scaleMat.scale(_rad, _rad, _rad);
 }
 
-void Sphere::draw(const std::string &_shader)
+void Sphere::draw()
 {
-  m_mat.loadToShader(_shader);
+  m_mat.loadToShader("material");
   ngl::VAOPrimitives::instance()->draw("sphere");
 }
-

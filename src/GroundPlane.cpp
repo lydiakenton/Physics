@@ -6,8 +6,8 @@ GroundPlane::GroundPlane(int _id, ngl::Real _yPos, ngl::Material _mat, Physics *
   m_yPos = _yPos;
 }
 
-void GroundPlane::draw(const std::string &_shader)
+void GroundPlane::draw()
 {
-  m_mat.loadToShader(_shader);
+  m_mat.loadToShader("material");
   ngl::VAOPrimitives::instance()->draw("plane");
 }

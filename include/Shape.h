@@ -16,23 +16,18 @@ public:
 
   Shape(int _id, ngl::Material _mat, Physics *_physics, bool _static);
 
-  virtual void draw(const std::string &_shader);
+  virtual void draw() = 0;
 
-  int getShapeID();
+  int getShapeID() {return m_id;}
   bool isStatic() {return m_static;}
   virtual ngl::Mat4 getTransformMatrix();
-  //void move();
-  void moveLeft();
-  void moveRight();
-  ngl::Mat4 fixCone();
-  //void setColour();
-  int getShapeType();
+  void push(ngl::Vec3 _dir);
+  void decrementID();
 
 protected:
 
   unsigned int m_id;
   ngl::Material m_mat;
-  //ngl::Vec3 m_dir;
 
   ngl::Mat4 m_scaleMat;
 

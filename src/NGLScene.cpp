@@ -11,9 +11,8 @@
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
 #include <ngl/Quaternion.h>
-#include <QApplication>
-#include <qobject.h>
-#include <QtGui>
+#include <QTime>
+
 #include <ngl/Random.h>
 #include <stdlib.h>
 #include "PhysicsLib.h"
@@ -39,13 +38,8 @@ NGLScene::NGLScene()
   
   m_width=1024;
   m_height=720;
+  m_floorHeight = 25;
 
-  m_playerPos.set(0,1,0);
-  m_player.push_back( std::unique_ptr<Player>(new Player(m_playerPos)));
-
-  QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(addPhysicsShapes));
-    timer->start(1000);
 }
 
 NGLScene::~NGLScene()
@@ -58,12 +52,12 @@ void NGLScene::resizeGL(QResizeEvent *_event)
   m_width=_event->size().width()*devicePixelRatio();
   m_height=_event->size().height()*devicePixelRatio();
   // now set the camera size values as the screen size has changed
-  m_cam.setShape(70.0f,(float)width()/height(),0.5f,350.0f);
+  m_cam.setShape(70.0f,(float)width()/height(),1.0f,350.0f);
 }
 
 void NGLScene::resizeGL(int _w , int _h)
 {
-  m_cam.setShape(70.0f,(float)_w/_h,0.5f,350.0f);
+  m_cam.setShape(70.0f,(float)_w/_h,1.0f,350.0f);
   m_width=_w*devicePixelRatio();
   m_height=_h*devicePixelRatio();
 }
@@ -73,7 +67,7 @@ void NGLScene::initializeGL()
   // we must call that first before any other GL commands to load and link the
   // gl commands from the lib, if that is not done program will crash
   ngl::NGLInit::instance();
-  glClearColor(0.6f, 0.6f, 0.6f, 1.0f);			   // Grey Background
+  glClearColor(0.7f, 0.7f, 0.9f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
@@ -112,8 +106,8 @@ void NGLScene::initializeGL()
   // Now we will create a basic Camera from the graphics library
   // This is a static camera so it only needs to be set once
   // First create Values for the camera position
-  ngl::Vec3 from(0,5,15);
-  ngl::Vec3 to = ngl::Vec3(0,5,0);
+  ngl::Vec3 from(0,m_floorHeight+5,15);
+  ngl::Vec3 to = ngl::Vec3(0,m_floorHeight+5,0);
   ngl::Vec3 up = ngl::Vec3::up();
   // now load to our new camera
   m_cam.set(from,to,up);
@@ -122,14 +116,15 @@ void NGLScene::initializeGL()
   m_cam.setShape(70.0f,(float)720.0/576.0f,0.5f,350.0f);
   shader->setUniform("viewerPos",m_cam.getEye().toVec3());
 
-  PhysicsLib::instance()->init();
+  PhysicsLib *physics = PhysicsLib::instance();
+  physics->init();
 
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
   // transformations
   ngl::Mat4 iv=m_cam.getViewMatrix();
   iv.transpose();
-  ngl::Light light(ngl::Vec3(-2,5,2),ngl::Colour(1,1,1,1),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT );
+  ngl::Light light(ngl::Vec3(-2,m_floorHeight+5,2),ngl::Colour(1,1,1,1),ngl::Colour(1,1,1,1),ngl::LightModes::POINTLIGHT );
   light.setTransform(iv);
   // load these values to the shader as well
   light.loadToShader("light");
@@ -139,22 +134,29 @@ void NGLScene::initializeGL()
   //set up the text
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
-  startTimer(10);
   glViewport(0,0,width(),height());
 
-  addStairs();
+  ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
+  mat.setDiffuse(ngl::Colour (0.5,0.1,0.8));
+  physics->setMaterial(mat);
 
-  updatePlayerPos(0,1,0);
-  for(auto &player : m_player)
-  {
-    loadMatricesToShader();
-    player->draw();
-  }
 
-  playerCollision();
+  physics->addCube(ngl::Vec3(0, m_floorHeight/2, 0), true, ngl::Vec3(25, m_floorHeight, 5));
 
+
+  addStairs(m_floorHeight);
+
+  mat.setDiffuse(ngl::Colour (0.9,0.2,0.8));
+  PhysicsLib::instance()->setMaterial(mat);
+
+  m_player.reset(new Player(ngl::Vec3(0,m_floorHeight+1,0)));
+  m_player->init();
+
+  ngl::Random::instance()->setSeed(QTime::currentTime().msecsSinceStartOfDay());
+
+  m_updateTimerID = startTimer(10);
+  m_shapeDropTimerID = startTimer(1000);
 }
-
 
 void NGLScene::loadMatricesToShader()
 {
@@ -192,15 +194,14 @@ void NGLScene::paintGL()
   // Rotation based on the mouse position for our global transform
   ngl::Mat4 rotX;
   ngl::Mat4 rotY;
+
   // create the rotation matrices
-  rotX.rotateX(m_spinXFace);
+  // disable X rotation
+  rotX.rotateX(0);
   rotY.rotateY(m_spinYFace);
+
   // multiply the rotations
   m_mouseGlobalTX=rotY*rotX;
-  // add the translations
-  m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
-  m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
-  m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
 
   drawPhysicsShapes();
 
@@ -210,12 +211,16 @@ void NGLScene::paintGL()
   renderTextToScreen();
 }
 
-void NGLScene::addStairs()
+void NGLScene::addStairs(float _floorHeight)
 {
     PhysicsLib *physics = PhysicsLib::instance();
+    ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
+    mat.setDiffuse(ngl::Colour (0.5,0.1,0.8));
+    physics->setMaterial(mat);
+
     for(int pos=10; pos<50; pos++)
     {
-      physics->addCube(ngl::Vec3(0, pos, -pos), true, ngl::Vec3(25, 0.5, 2));
+      physics->addCube(ngl::Vec3(0, _floorHeight+pos, -pos), true, ngl::Vec3(25, 0.5, 2));
     }
 }
 
@@ -226,41 +231,57 @@ void NGLScene::drawPhysicsShapes()
   {
     m_bodyTransform = physics->getShapeTransformMatrix(i);
     loadMatricesToShader();
-    physics->drawShape(i,"material");
-  }
-  for(int i=0; i< physics->getNumOfCones(); i++)
-  {
-    m_bodyTransform = physics->getConeTransformMatrix(i);
-    loadMatricesToShader();
-    physics->drawCone(i,"material");
+    physics->drawShape(i);
   }
   m_bodyTransform.identity();
+  m_bodyTransform.scale(2,2,2);
   loadMatricesToShader();
-  physics->drawGroundPlane("material");
+  physics->drawGroundPlane();
 }
 
-void NGLScene::addPhysicsShapes()
+void NGLScene::addPhysicsShape()
 {
   PhysicsLib *physics = PhysicsLib::instance();
-
   ngl::Random *rng = ngl::Random::instance();
-  float rad = rng->randomPositiveNumber(2);
-  float height = rng->randomPositiveNumber(2);
-  float width = rng->randomPositiveNumber(2);
-  float length = rng->randomPositiveNumber(2);
-  float pos = rng->randomNumber(5);
 
+  ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
+  ngl::Colour colour = rng->getRandomColour();
+  mat.setDiffuse(colour);
+  physics->setMaterial(mat);
 
-  physics->addSphere(ngl::Vec3(pos, 30, -20), false, rad);
+  float xPos = rng->randomNumber(10);
 
-  //used rad twice to make cones uniform. trying to get them to not clip through floor
-  physics->addCone(ngl::Vec3(pos, 30, -20), false, 1.0, 1.0);
+  float zPos = -40;
 
-  physics->addCube(ngl::Vec3(pos, 30, -20), false, ngl::Vec3(width, height, length));
+  float yPos = m_floorHeight+10-zPos;
 
-  //create dynamic capsule
-  //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
-  physics->addCapsule(ngl::Vec3(pos, 30, -20), false, rad, rad);
+  int shape = int(rng->randomPositiveNumber(4));
+
+  if(shape==0)
+  {
+    float height = rng->randomPositiveNumber(2) + 1;
+    float width = rng->randomPositiveNumber(2) + 1;
+    float length = rng->randomPositiveNumber(2) + 1;
+    physics->addCube(ngl::Vec3(xPos, yPos, zPos), false, ngl::Vec3(width, height, length));
+  }
+  if(shape==1)
+  {
+    float rad = rng->randomPositiveNumber(2) + 0.5;
+    physics->addSphere(ngl::Vec3(xPos, yPos, zPos), false, rad);
+  }
+  if(shape==2)
+  {
+    float size = rng->randomPositiveNumber(1) + 0.5;
+    //if height and rad are set to the same it scales correctly, if they are different values it will draw incorrectly
+    physics->addCapsule(ngl::Vec3(xPos, yPos, zPos), false, size, size);
+  }
+  if(shape==3)
+  {
+    float rad = rng->randomPositiveNumber(1) + 1;
+    float height = rng->randomPositiveNumber(1) + 1;
+    physics->addCone(ngl::Vec3(xPos, yPos, zPos), false, rad, height);
+  }
+
 }
 
 void NGLScene::renderTextToScreen()
@@ -269,14 +290,13 @@ void NGLScene::renderTextToScreen()
   unsigned int bodies = physics->getNumOfShapes();
 
   m_text->setColour(ngl::Colour(1,1,1));
-  m_text->renderText(10,12,"Use keys 1-5 to create different shapes");
-  m_text->renderText(10,12*3,"Press C to clear the shapes");
-  m_text->renderText(10,12*5,"Press Esc to exit");
-  m_text->renderText(10,12*9, "Transformation Matrix: ");
+  m_text->renderText(10,12,"Use the arrow keys to move");
+  m_text->renderText(10,12*3,"Press Esc to exit");
+  m_text->renderText(10,12*9, "Player transformation Matrix: ");
 
   QString text2 = QString("Number of bodies: %2").arg(bodies-1);
   m_text->renderText(10,12*7,text2);
-  m_bodyTransform = physics->getShapeTransformMatrix(bodies-1);
+  m_bodyTransform = physics->getShapeTransformMatrix(m_player->getID());
   QString text;
 
   for(int j=0; j<4; j++)
@@ -374,9 +394,6 @@ void NGLScene::wheelEvent(QWheelEvent *_event)
 
 void NGLScene::keyPressEvent(QKeyEvent *_event)
 {
-  PhysicsLib *physics = PhysicsLib::instance();
-  ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
-
   // that method is called every time the main window recives a key event.
   // we then switch on the key value and set the camera in the GLWindow
   switch (_event->key())
@@ -391,23 +408,10 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
-  //clear screen
-  case Qt::Key_C : resetSim(); break;
 
-  case Qt::Key_1 : addPhysicsShapes(); break;
+  case Qt::Key_Left : m_player->setLeft(true); break;
 
-  case Qt::Key_Up :
-    mat.setDiffuse(ngl::Colour(1.0, 0.5, 0.5, 1.0));
-    physics->setMaterial(mat);
-    break;
-  case Qt::Key_Down : physics->setMaterial(ngl::STDMAT::PEWTER); break;
-
-  case Qt::Key_Left :
-    physics->moveLeft(40);
-  break;
-  case Qt::Key_Right :
-    physics->moveRight(40);
-  break;
+  case Qt::Key_Right : m_player->setRight(true); break;
 
   default : break;
   }
@@ -415,36 +419,41 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   update();
 }
 
+void NGLScene::keyReleaseEvent(QKeyEvent *_event)
+{
+  switch(_event->key())
+  {
+    case Qt::Key_Left : m_player->setLeft(false); break;
+
+    case Qt::Key_Right : m_player->setRight(false); break;
+
+    default : break;
+  }
+}
+
 void NGLScene::resetSim()
 {
-  PhysicsLib::instance()->reset(40);
-}
-
-void NGLScene::updatePlayerPos(float _dx, float _dy, float _dz)
-{
-  for(auto &player : m_player)
-  {
-    m_playerPos.m_x = _dx;
-    m_playerPos.m_y = _dy;
-    m_playerPos.m_z = _dz;
-    player->setPos(m_playerPos);
-  }
-}
-
-void NGLScene::playerCollision()
-{
-  if(PhysicsLib::instance()->collision())
-  {
-    resetSim();
-    std::cout<<"working"<<std::endl;
-  }
+  //PhysicsLib::instance()->reset();
 }
 
 void NGLScene::timerEvent(QTimerEvent *_e)
 {
-  if(m_animate==true)
+  if(_e->timerId() == m_updateTimerID)
+  {
+    if(m_animate==true)
     {
       PhysicsLib::instance()->step(1.0/60,10);
+      m_player->update();
+      if((m_player->getPosition())[1] < m_floorHeight-1)
+      {
+
+      }
     }
-  update();
+    update();
+  }
+  else if(_e->timerId() == m_shapeDropTimerID)
+  {
+    addPhysicsShape();
+    //PhysicsLib::instance()->removeShape(2);
+  }
 }

@@ -20,33 +20,25 @@ public :
   void setGravity(float _x,float _y,float _z);
 
   const std::vector<std::unique_ptr<Shape>>& getShapes(){return m_shapes;}
-  const std::vector<std::unique_ptr<Cone>>& getCones(){return m_cones;}
 
   void addGroundPlane(ngl::Real _yPos);
-  void addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size);
-  void addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad);
-  void addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
-  void addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
+  int addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size);
+  int addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad);
+  int addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
+  int addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height);
 
   ngl::Mat4 getShapeTransformMatrix(int _shapeIndex);
-  ngl::Mat4 getConeTransformMatrix(int _shapeIndex);
 
-  void drawShape(int _shapeIndex, const std::string &_shader);
+  void drawShape(int _shapeIndex);
   int getNumOfShapes();
-  int getNumOfCones();
 
-  void drawGroundPlane(const std::string &_shader);
-  void drawCone(int _shapeIndex, const std::string &_shader);
+  void drawGroundPlane();
   void step(float _time, float _step);
 
   void setMaterial(ngl::Material _mat);
 
-  void reset(int _shapeIndex);
-  //void move(int _shapeIndex, ngl::Vec3 _dir);
-  void moveLeft(int _shapeIndex);
-  void moveRight(int _shapeIndex);
-
-  bool collision();
+  void push(int _shapeIndex, ngl::Vec3 _dir);
+  //void removeShape(int _shapeIndex);
 
 private :
   PhysicsLib();
@@ -57,7 +49,6 @@ private :
   std::unique_ptr<GroundPlane> m_groundPlane;
 
   std::vector<std::unique_ptr<Shape>> m_shapes;
-  std::vector<std::unique_ptr<Cone>> m_cones;
 
   ngl::Material m_currentMat;
 };

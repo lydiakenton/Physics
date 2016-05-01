@@ -5,12 +5,10 @@
 
 PhysicsLib::PhysicsLib()
 {
-
 }
 
 PhysicsLib::~PhysicsLib()
 {
-
 }
 
 void PhysicsLib::init()
@@ -26,7 +24,6 @@ void PhysicsLib::init()
   addGroundPlane(0);
 }
 
-
 void PhysicsLib::setGravity(float _x, float _y, float _z)
 {
   m_physics.setGravity(_x,_y,_z);
@@ -38,19 +35,20 @@ void PhysicsLib::addGroundPlane(ngl::Real _yPos)
   m_groundPlane.reset(new GroundPlane(groundPlaneIndex, _yPos, m_currentMat, &m_physics));
 }
 
-void PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
+int PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
 {
   ngl::Real mass = 0;
   if(!_static)
   {
     mass = ngl::PI*_rad*_rad*(_height/3);
   }
-  int coneIndex = m_physics.addCone(_pos,mass,_static,_rad,_height);
-  m_cones.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
-  //m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneIndex, _rad, _height, m_currentMat, &m_physics, _static)));
+  int coneID = m_physics.addCone(_pos,mass,_static,_rad,_height);
+  m_shapes.push_back(std::unique_ptr<Cone>(new Cone(coneID, _rad, _height, m_currentMat, &m_physics, _static)));
+  int coneIndex = m_shapes.size()-1;
+  return coneIndex;
 }
 
-void PhysicsLib::addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
+int PhysicsLib::addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
 {
   // mass = volume of sphere + volume of cylinder
   ngl::Real mass = 0;
@@ -58,11 +56,13 @@ void PhysicsLib::addCapsule(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::R
   {
    mass = ((4/3)* ngl::PI *_rad*_rad*_rad) + (ngl::PI *_rad*_rad*_height);
   }
-  int capsuleIndex = m_physics.addCapsule(_pos,mass,_static,_rad,_height);
-  m_shapes.push_back(std::unique_ptr<Capsule>(new Capsule(capsuleIndex,_rad,_height, m_currentMat, &m_physics, _static)));
+  int capsuleID = m_physics.addCapsule(_pos,mass,_static,_rad,_height);
+  m_shapes.push_back(std::unique_ptr<Capsule>(new Capsule(capsuleID,_rad,_height, m_currentMat, &m_physics, _static)));
+  int capsuleIndex = m_shapes.size()-1;
+  return capsuleIndex;
 }
 
-void PhysicsLib::addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size)
+int PhysicsLib::addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size)
 {
   // divide by 2 so that ngl and bullet agree about size
   ngl::Vec3 collisionSize = _size/2;
@@ -71,19 +71,23 @@ void PhysicsLib::addCube(ngl::Vec3 _pos, bool _static, ngl::Vec3 _size)
   {
     mass = _size.m_x*_size.m_y*_size.m_z;
   }
-  int cubeIndex = m_physics.addCube(_pos,mass,_static,collisionSize);
-  m_shapes.push_back(std::unique_ptr<Cube>(new Cube(cubeIndex,_size, m_currentMat, &m_physics, _static)));
+  int cubeID = m_physics.addCube(_pos,mass,_static,collisionSize);
+  m_shapes.push_back(std::unique_ptr<Cube>(new Cube(cubeID,_size, m_currentMat, &m_physics, _static)));
+  int cubeIndex = m_shapes.size()-1;
+  return cubeIndex;
 }
 
-void PhysicsLib::addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad)
+int PhysicsLib::addSphere(ngl::Vec3 _pos, bool _static, ngl::Real _rad)
 {
   ngl::Real mass = 0;
   if(!_static)
   {
     mass = (4/3) * ngl::PI *_rad*_rad*_rad;
   }
-  int sphereIndex = m_physics.addSphere(_pos,mass,_static,_rad);
-  m_shapes.push_back(std::unique_ptr<Sphere>(new Sphere(sphereIndex,_rad, m_currentMat, &m_physics, _static)));
+  int sphereID = m_physics.addSphere(_pos,mass,_static,_rad);
+  m_shapes.push_back(std::unique_ptr<Sphere>(new Sphere(sphereID,_rad, m_currentMat, &m_physics, _static)));
+  int sphereIndex = m_shapes.size()-1;
+  return sphereIndex;
 }
 
 void PhysicsLib::step(float _time, float _step)
@@ -96,25 +100,14 @@ ngl::Mat4 PhysicsLib::getShapeTransformMatrix(int _shapeIndex)
   return m_shapes[_shapeIndex]->getTransformMatrix();
 }
 
-ngl::Mat4 PhysicsLib::getConeTransformMatrix(int _shapeIndex)
+void PhysicsLib::drawShape(int _shapeIndex)
 {
-  return m_cones[_shapeIndex]->fixCone();
-  //return m_shapes[_shapeIndex]->fixCone();
+  m_shapes[_shapeIndex]->draw();
 }
 
-void PhysicsLib::drawShape(int _shapeIndex, const std::string &_shader)
+void PhysicsLib::drawGroundPlane()
 {
-  return m_shapes[_shapeIndex]->draw(_shader);
-}
-
-void PhysicsLib::drawGroundPlane(const std::string &_shader)
-{
-  m_groundPlane->draw(_shader);
-}
-
-void PhysicsLib::drawCone(int _shapeIndex, const std::string &_shader)
-{
-  return m_cones[_shapeIndex]->draw(_shader);
+  m_groundPlane->draw();
 }
 
 int PhysicsLib::getNumOfShapes()
@@ -122,45 +115,22 @@ int PhysicsLib::getNumOfShapes()
   return m_shapes.size();
 }
 
-int PhysicsLib::getNumOfCones()
-{
-  return m_cones.size();
-}
-
 void PhysicsLib::setMaterial(ngl::Material _mat)
 {
   m_currentMat = _mat;
 }
 
-//void PhysicsLib::move(int _shapeIndex, ngl::Vec3 _dir)
+void PhysicsLib::push(int _shapeIndex, ngl::Vec3 _dir)
+{
+  return m_shapes[_shapeIndex]->push(_dir);
+}
+
+//void PhysicsLib::removeShape(int _shapeIndex)
 //{
-//  return m_physics.move(_shapeIndex, _dir);
+//  m_physics.deleteBody(m_shapes[_shapeIndex]->getShapeID());
+//  m_shapes.erase(m_shapes.begin()+_shapeIndex);
+//  for(int i=_shapeIndex; i<m_shapes.size(); i++)
+//  {
+//    m_shapes[i]->decrementID();
+//  }
 //}
-
-void PhysicsLib::moveLeft(int _shapeIndex)
-{
-  return m_shapes[_shapeIndex]->moveLeft();
-}
-
-void PhysicsLib::moveRight(int _shapeIndex)
-{
-  return m_shapes[_shapeIndex]->moveRight();
-}
-
-bool PhysicsLib::collision()
-{
-  bool collision;
-  for(int i=40; i<m_shapes.size(); i++)
-  {
-    std::cout<<"hello"<<std::endl;
-    collision = m_physics.isCollision(i);
-  }
-  return collision;
-}
-
-void PhysicsLib::reset(int _shapeIndex)
-{
-  m_shapes.erase(m_shapes.begin()+41,m_shapes.end());
-  m_cones.erase(m_cones.begin(),m_cones.end());
-  //m_physics.moveToOrigin(_shapeIndex);
-}

@@ -8,8 +8,8 @@ Capsule::Capsule(int _id, ngl::Real _rad, ngl::Real _height, ngl::Material _mat,
   m_scaleMat.scale(_rad, _height, _rad);
 }
 
-void Capsule::draw(const std::string &_shader)
+void Capsule::draw()
 {
-  m_mat.loadToShader(_shader);
+  m_mat.loadToShader("material");
   ngl::VAOPrimitives::instance()->draw("capsule");
 }

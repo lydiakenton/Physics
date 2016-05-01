@@ -47,10 +47,9 @@ int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Rea
   rigidBodyCI.m_restitution = 0.75f;
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
-  //rigidBody->setLinearVelocity(btVector3(0,1,0));
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
   rigidBody->setRollingFriction(btScalar(0.75f));
-  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+  rigidBody->setDamping(0.1,0.1);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -76,9 +75,9 @@ int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real 
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.3f);
+  rigidBody->setDamping(0.1,0.1);
   rigidBody->setRollingFriction(0.25f);
 
-  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -104,6 +103,7 @@ int Physics::addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
+  rigidBody->setDamping(0.1,0.1);
   rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
   if(_isStatic)
   {
@@ -132,7 +132,7 @@ int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Re
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->setRestitution(0.5f);
-  //rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+  rigidBody->setDamping(0.1,0.1);
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
@@ -170,66 +170,33 @@ int Physics::getCollisionShape(unsigned int _index) const
   return collisionShape->getShapeType();
 }
 
-bool Physics::isCollision(unsigned int _index)
-{
-  bool collision = false;
-  btCollisionObject* obj1 = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  btCollisionObject* obj2 = m_dynamicsWorld->getCollisionObjectArray()[_index+1];
-  if(obj1->checkCollideWith(obj2)==true)
-  {
-    std::cout<<"collision"<<std::endl;
-    collision =  true;
-  }
-  return collision;
-}
-
 int Physics::isStatic(unsigned int _index)
 {
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+
   btRigidBody* rigidBody = btRigidBody::upcast(obj);
 
   return rigidBody->isStaticObject();
 }
 
-//void Physics::move(unsigned int _index, ngl::Vec3 _dir)
-//{
-//  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-//  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
-//  _rigidBody->activate(true);
-//  _rigidBody->setRestitution(0.0f);
-//  _rigidBody->setDamping(0.8f, 0.8f);
-//  _rigidBody->applyCentralImpulse(btVector3(_dir.m_x,_dir.m_y,_dir.m_z));
-//}
-
-void Physics::moveLeft(unsigned int _index)
+void Physics::push(unsigned int _index, ngl::Vec3 _dir)
 {
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
   _rigidBody->setRestitution(0.0f);
   _rigidBody->setDamping(0.8f,0.8f);
-  _rigidBody->applyCentralImpulse(btVector3(-8.0f,0.0f,0.0f));
+  _rigidBody->applyCentralImpulse(btVector3(_dir.m_x,_dir.m_y,_dir.m_z));
+
 }
 
-void Physics::moveRight(unsigned int _index)
+void Physics::moveToOrigin(unsigned int _index, ngl::Vec3 _pos)
 {
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
-  _rigidBody->setRestitution(0.0f);
-  _rigidBody->setDamping(0.8f,0.8f);
-  _rigidBody->applyCentralImpulse(btVector3(8.0f,0.0f,0.0f));
+  _rigidBody->translate(btVector3(-_pos.m_x,-_pos.m_y,-_pos.m_z));
 }
-
-//void Physics::moveToOrigin(unsigned int _index)
-//{
-//  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-//  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
-//  _rigidBody->activate(true);
-//  btTransform transform;
-//  transform.setOrigin(btVector3(0,1,0));
-//  _rigidBody->translate(btVector3(0,1,0));
-//}
 
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 {
@@ -249,7 +216,6 @@ ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
   }
   else
   {
-    std::cout << "NOT working" << std::endl;
     return ngl::Mat4();
   }
 }
@@ -257,6 +223,8 @@ ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 void Physics::step(float _time, float _step)
 {
   m_dynamicsWorld->stepSimulation(_time,_step);
+  std::cout<< m_dynamicsWorld->getNumCollisionObjects() <<std::endl;
+
 }
 
 int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
@@ -266,3 +234,9 @@ int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
   return bodyIndex;
 }
 
+//void Physics::deleteBody(unsigned int _index)
+//{
+//  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
+//  m_dynamicsWorld->removeCollisionObject(obj);
+//  delete obj;
+//}

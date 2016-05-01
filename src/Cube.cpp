@@ -7,8 +7,8 @@ Cube::Cube(int _id, ngl::Vec3 _size, ngl::Material _mat, Physics *_physics, bool
   m_scaleMat.scale(_size.m_x, _size.m_y, _size.m_z);
 }
 
-void Cube::draw(const std::string &_shader)
+void Cube::draw()
 {
-  m_mat.loadToShader(_shader);
+  m_mat.loadToShader("material");
   ngl::VAOPrimitives::instance()->draw("cube");
 }
