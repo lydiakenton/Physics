@@ -1,9 +1,18 @@
-#SimpleNGL
-![alt tag](http://nccastaff.bournemouth.ac.uk/jmacey/GraphicsLib/Demos/SimpleNGL.png)
+#PhysicsLib
 
-This is the most basic version of an NGL demo, it creates a simple window in Qt and allows
-the manipulaiton of the teapot using the mouse.
+This is a demonstration game for my physics library. The physics library is to be used for creating various shapes under the
+influence of physics. This could be used for games and applications, providing a simple interface for users.
 
-Note this version has now been modified to use glsl #version 330 so it works with the latest Mesa3D drivers and Intel HD gpu's. If you want to use the latest glsl versions just change the #version
+Configuration:
+This program can be configured and run by opening Qt Creator and pressing the run button or by using "ctrl+r".
 
-Note this branch is an older version and will not be maintained as it uses the old OpenGL widget 
+Config file:
+In order to change the initial settings of the program, "Settings.txt" can be opened and edited before running the program.
+
+Executable:
+The executable file will only runt he program when located with the shaders file.
+
+Instructions:
+Use the left and right arrow keys to move the player.
+Press spacebar to pause and un-pause.
+Press Esc to exit.

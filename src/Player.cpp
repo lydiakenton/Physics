@@ -12,6 +12,7 @@ Player::Player(ngl::Vec3 _pos)
 
 void Player::init()
 {
+  // create a cube to act as the player
   PhysicsLib *physics = PhysicsLib::instance();
   m_id = physics->addCube(m_pos, false, ngl::Vec3(2,2,2));
 }
@@ -20,6 +21,7 @@ void Player::update()
 {
   PhysicsLib *physics = PhysicsLib::instance();
   int dir = 0;
+  // controls the movement of the player
   if(m_left == true)
   {
     dir -= m_speed;

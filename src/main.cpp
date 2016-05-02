@@ -5,7 +5,25 @@ basic OpenGL demo modified from http://qt-project.org/doc/qt-5.0/qtgui/openglwin
 #include <iostream>
 #include "NGLScene.h"
 
-
+/*! \mainpage
+ * \section PhysicsLibrary Physics Library & Demo Game
+ *
+ * For my physics library, I decided to use the Bullet Detection & Physics Library to handle the physics involved in the falling and colliding of different shapes.
+ *
+ * This library aims to be a user friendly wrapper around the Bullet Physics Library, giving the user a straight forward way to create shapes with Physics attached to them.
+ *
+ * I also created a simple game to demonstrate my physics library and I wanted my main focus to remain on the library and the different ways in which I could make it useful for a potential user.
+ *
+ * \subsection game Game Instructions
+ *
+ * Use the left and right arrow keys to move the player to avoid oncoming shapes.
+ *
+ * The game is over and you lose when the player falls off the platform.
+ *
+ * Press Esc to exit.
+ *
+ * Press spacebar to pause.
+ */
 
 int main(int argc, char **argv)
 {
@@ -37,8 +55,7 @@ int main(int argc, char **argv)
 
   // we can now query the version to see if it worked
   std::cout<<"Profile is "<<format.majorVersion()<<" "<<format.minorVersion()<<"\n";
-  // set the window size
-  window.resize(1024, 720);
+
   // and finally show
   window.show();
 

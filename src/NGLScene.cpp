@@ -13,18 +13,16 @@
 #include <ngl/Quaternion.h>
 #include <QTime>
 #include <cmath>
+#include <fstream>
+#include <sstream>
 
 #include <ngl/Random.h>
 #include <stdlib.h>
 #include "PhysicsLib.h"
 
-//----------------------------------------------------------------------------------------------------------------------
-/// @brief the increment for x/y translation with mouse movement
-//----------------------------------------------------------------------------------------------------------------------
+//! @brief the increment for x/y translation with mouse movement
 const static float INCREMENT=0.01f;
-//----------------------------------------------------------------------------------------------------------------------
-/// @brief the increment for the wheel zoom
-//----------------------------------------------------------------------------------------------------------------------
+//! @brief the increment for the wheel zoom
 const static float ZOOM=0.1f;
 
 NGLScene::NGLScene()
@@ -34,15 +32,36 @@ NGLScene::NGLScene()
   // mouse rotation values set to 0
   m_spinXFace=0.0f;
   m_spinYFace=0.0f;
-  setTitle("Simple Physics");
-  m_animate=true;
-  
-  m_width=1024;
-  m_height=720;
-  m_floorHeight = 25;
-
-  m_shapeDropRate = 2048;
+  m_level = 1;
   m_score = 0;
+  setTitle("Physics Library Demo Game");
+  
+  std::ifstream settings("Settings.txt");
+  if(!settings.is_open())
+  {
+    std::cerr<<"Error: Cannot detect settings file. Using default values."<<std::endl;
+
+    m_animate=true;
+    m_width=1024;
+    m_height=720;
+    m_floorHeight = 25;
+    // start rate for the dropping of shapes
+    m_initialDropRate = 1024;
+    m_minDropRate = 256;
+  }
+  else
+  {
+    m_animate= getConfigSetting(&settings);
+    m_width= getConfigSetting(&settings);
+    m_height= getConfigSetting(&settings);
+    m_floorHeight = getConfigSetting(&settings);
+    m_initialDropRate = getConfigSetting(&settings);
+    m_minDropRate = getConfigSetting(&settings);
+
+    settings.close();
+  }
+  m_shapeDropRate = m_initialDropRate;
+  resize(m_width, m_height);
 }
 
 NGLScene::~NGLScene()
@@ -70,7 +89,7 @@ void NGLScene::initializeGL()
   // we must call that first before any other GL commands to load and link the
   // gl commands from the lib, if that is not done program will crash
   ngl::NGLInit::instance();
-  glClearColor(0.7f, 0.7f, 0.9f, 1.0f);			   // Grey Background
+  glClearColor(0.7f, 0.7f, 0.9f, 1.0f);			   // Light purple Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   // enable multisampling for smoother drawing
@@ -122,7 +141,6 @@ void NGLScene::initializeGL()
   PhysicsLib *physics = PhysicsLib::instance();
   physics->init();
 
-
   // now create our light that is done after the camera so we can pass the
   // transpose of the projection matrix to the light to do correct eye space
   // transformations
@@ -135,20 +153,21 @@ void NGLScene::initializeGL()
   // as re-size is not explicitly called we need to do that.
   // set the viewport for openGL we need to take into account retina display
 
-  //set up the text
+  //set up the text for when the player is alive
   m_text = new ngl::Text(QFont ("Helvetica", 12));
 
+  // larger text for when the player is killed
   m_largeText = new ngl::Text(QFont("Helvetica", 60));
 
   glViewport(0,0,width(),height());
 
+  // set colour for the floor
   ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
   mat.setDiffuse(ngl::Colour (0.5,0.1,0.8));
   physics->setMaterial(mat);
 
   // add floor
   physics->addCube(ngl::Vec3(0, m_floorHeight/2, 0), true, ngl::Vec3(25, m_floorHeight, 5));
-
 
   addStairs(m_floorHeight);
 
@@ -158,6 +177,7 @@ void NGLScene::initializeGL()
   m_player.reset(new Player(ngl::Vec3(0,m_floorHeight+1,0)));
   m_player->init();
 
+  // randomise so that the shapes and colours are different every time
   ngl::Random::instance()->setSeed(QTime::currentTime().msecsSinceStartOfDay());
 
   m_updateTimerID = startTimer(10);
@@ -221,6 +241,7 @@ void NGLScene::paintGL()
 
 void NGLScene::addStairs(float _floorHeight)
 {
+    // create staircase for the enemy shapes to fall down
     PhysicsLib *physics = PhysicsLib::instance();
     ngl::Material mat(ngl::STDMAT::BLACKPLASTIC);
     mat.setDiffuse(ngl::Colour (0.5,0.1,0.8));
@@ -257,6 +278,7 @@ void NGLScene::addPhysicsShape()
   mat.setDiffuse(colour);
   physics->setMaterial(mat);
 
+  // shapes are created at random points at the top of the stairs on a timer
   float xPos = rng->randomNumber(10);
 
   float zPos = -40;
@@ -265,6 +287,7 @@ void NGLScene::addPhysicsShape()
 
   int shape = int(rng->randomPositiveNumber(4));
 
+  // set alternatice random variables dependant on the shape being created so they are similar sizes
   if(shape==0)
   {
     float height = rng->randomPositiveNumber(2) + 1;
@@ -295,21 +318,24 @@ void NGLScene::renderTextToScreen()
 {
   QString text;
   PhysicsLib *physics = PhysicsLib::instance();
-  if(m_player->isAlive())
+  if(m_player->isAlive() && m_animate == true)
   {
+    // prints game information while the player is alive
     unsigned int bodies = physics->getNumOfShapes();
 
     m_text->setColour(ngl::Colour(1,1,1));
     m_text->renderText(10,12,"Use the arrow keys to move");
     m_text->renderText(10,12*3,"Press Esc to exit");
+    m_text->renderText(10, 12*5, "Press spacebar to pause");
 
-    text = QString("Level: %1").arg(log2(2048/m_shapeDropRate));
-    m_text->renderText(10,12*5, text);
+    text = QString("Level: %1").arg(log2(m_initialDropRate/m_shapeDropRate));
+    m_text->renderText(10,12*7, text);
 
     text = QString("Number of bodies: %1").arg(bodies-1);
-    m_text->renderText(10,12*7,text);
+    m_text->renderText(10,12*9,text);
 
-    m_text->renderText(10,12*9, "Player transformation Matrix: ");
+    // prints the transformation matrix of the player
+    m_text->renderText(10,12*11, "Player transformation Matrix: ");
     m_bodyTransform = physics->getShapeTransformMatrix(m_player->getID());
 
     for(int j=0; j<4; j++)
@@ -317,22 +343,26 @@ void NGLScene::renderTextToScreen()
       for(int k=0; k<4; k++)
       {
         text.sprintf("[%+0.4f]",m_bodyTransform.m_m[j][k]);
-        m_text->renderText(10+(75*j),130+(24*k),text);
+        m_text->renderText(10+(75*j),156+(24*k),text);
       }
     }
     text = QString("Score: %1").arg(m_score);
     m_text->renderText(10,12*23,text);
   }
+  else if(m_player->isAlive())
+  {
+    m_largeText->renderText(m_width/2-150, m_height/2-40, "PAUSED");
+    m_text->renderText(m_width/2-80, m_height/2+40, "Press spacebar to continue");
+  }
   else
   {
-    m_largeText->renderText(m_height/2.3f, m_width/3.5f, "YOU LOSE");
+    // prints large text to say that the player has lost and their score
+    m_largeText->renderText(m_width/2-200, m_height/2-60, "YOU LOSE");
     text = QString("score: %1").arg(m_score);
-    m_largeText->renderText(m_height/2.3f, m_width/3.5f+80, text);
-
+    m_largeText->renderText(m_width/2-150, m_height/2+20, text);
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent (QMouseEvent * _event)
 {
   // note the method buttons() is the button state when event was called
@@ -361,8 +391,6 @@ void NGLScene::mouseMoveEvent (QMouseEvent * _event)
    }
 }
 
-
-//----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mousePressEvent ( QMouseEvent * _event)
 {
   // that method is called when the mouse button is pressed in this case we
@@ -382,7 +410,6 @@ void NGLScene::mousePressEvent ( QMouseEvent * _event)
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseReleaseEvent ( QMouseEvent * _event )
 {
   // that event is called when the mouse button is released
@@ -398,7 +425,6 @@ void NGLScene::mouseReleaseEvent ( QMouseEvent * _event )
   }
 }
 
-//----------------------------------------------------------------------------------------------------------------------
 void NGLScene::wheelEvent(QWheelEvent *_event)
 {
 
@@ -413,7 +439,6 @@ void NGLScene::wheelEvent(QWheelEvent *_event)
 	}
 	update();
 }
-//----------------------------------------------------------------------------------------------------------------------
 
 void NGLScene::keyPressEvent(QKeyEvent *_event)
 {
@@ -431,10 +456,12 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
-
+  // moves the player left
   case Qt::Key_Left : m_player->setLeft(true); break;
-
+  // moves the player right
   case Qt::Key_Right : m_player->setRight(true); break;
+
+  case Qt::Key_Space : togglePauseSim(); break;
 
   default : break;
   }
@@ -444,6 +471,7 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
 
 void NGLScene::keyReleaseEvent(QKeyEvent *_event)
 {
+  // allows for a smoother movement
   switch(_event->key())
   {
     case Qt::Key_Left : m_player->setLeft(false); break;
@@ -454,42 +482,61 @@ void NGLScene::keyReleaseEvent(QKeyEvent *_event)
   }
 }
 
-void NGLScene::resetSim()
+void NGLScene::togglePauseSim()
 {
-  //PhysicsLib::instance()->reset();
+  m_animate ^= true;
 }
+
 
 void NGLScene::timerEvent(QTimerEvent *_e)
 {
   if(_e->timerId() == m_updateTimerID)
   {
-    if(m_animate==true)
+    if(m_animate==true && m_player->isAlive())
     {
-      if(m_player->isAlive())
+      // normal frame rate when the player is alive
+      PhysicsLib::instance()->step(1.0/60,10);
+      if((m_player->getPosition())[1] < m_floorHeight-1)
       {
-        PhysicsLib::instance()->step(1.0/60,10);
-        if((m_player->getPosition())[1] < m_floorHeight-1)
-        {
-          m_player->kill();
-        }
-        m_player->update();
-        m_score = m_time.elapsed()/1000;
+        // player is killed when it falls off the floor platform
+        m_player->kill();
       }
-      else
-      {
-        PhysicsLib::instance()->step(1.0/240,10);
-      }
+      m_player->update();
+      // player score is calculated by seconds player for
+      m_score = m_time.elapsed()/1000;
+    }
+    else
+    {
+      // slow motion when the player is killed
+      PhysicsLib::instance()->step(1.0/240,10);
     }
     update();
   }
-  else if(_e->timerId() == m_shapeDropTimerID && m_player->isAlive())
+  else if(_e->timerId() == m_shapeDropTimerID && m_player->isAlive() && m_animate == true)
   {
     addPhysicsShape();
-    if((PhysicsLib::instance()->getNumOfShapes() % 20) * log2(2048/m_shapeDropRate) == 0)
+    if((PhysicsLib::instance()->getNumOfShapes() % 20) == 0)
     {
-      if(m_shapeDropRate > 256) m_shapeDropRate /= 2;
+      // increase the rate of shapes dropping to increase the difficulty
+      if(m_shapeDropRate > m_minDropRate) m_shapeDropRate /= 2;
       killTimer(m_shapeDropTimerID);
       m_shapeDropTimerID = startTimer(m_shapeDropRate);
+      m_level++;
     }
   }
+}
+
+int NGLScene::getConfigSetting(std::ifstream *_settings)
+{
+  std::string line;
+  std::istringstream iss;
+  std::vector<std::string> splitLine;
+  int value;
+
+  std::getline(*_settings, line);
+  iss.str(line);
+  splitLine = std::vector<std::string>((std::istream_iterator<std::string>(iss)), (std::istream_iterator<std::string>()));
+  value = std::stoi(splitLine[1]);
+
+  return value;
 }

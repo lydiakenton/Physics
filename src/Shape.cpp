@@ -13,6 +13,7 @@ ngl::Mat4 Shape::getTransformMatrix()
 {
   ngl::Mat4 transRot = m_physics->getTransformMatrix(m_id);
 
+  // ensures that the scaling of shapes is performed correctly
   ngl::Mat4 transformation = m_scaleMat * transRot;
 
   return transformation;
@@ -22,8 +23,3 @@ void Shape::push(ngl::Vec3 m_dir)
 {
   m_physics->push(m_id, m_dir);
 }
-
-//void Shape::decrementID()
-//{
-//  m_id--;
-//}

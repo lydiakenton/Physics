@@ -14,178 +14,128 @@
 #include <memory>
 #include <QTime>
 #include "Player.h"
-//----------------------------------------------------------------------------------------------------------------------
-/// @file NGLScene.h
-/// @brief this class inherits from the Qt OpenGLWindow and allows us to use NGL to draw OpenGL
-/// @author Jonathan Macey
-/// @version 1.0
-/// @date 10/9/13
-/// Revision History :
-/// This is an initial version used for the new NGL6 / Qt 5 demos
-/// @class NGLScene
-/// @brief our main glwindow widget for NGL applications all drawing elements are
-/// put in this file
-//----------------------------------------------------------------------------------------------------------------------
+
+//! This class inherits from the Qt OpenGLWindow and allows use of NGL to draw OpenGL
+//! The main glwindow widget for NGL applications all drawing elements are put in this file
 
 class NGLScene : public QOpenGLWindow
 {
   Q_OBJECT
   public:
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief ctor for our NGL drawing class
-    /// @param [in] parent the parent window to the class
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Ctor for our NGL drawing class
+    //! @param [in] Parent the parent window to the class
     NGLScene();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief dtor must close down ngl and release OpenGL resources
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Dtor must close down ngl and release OpenGL resources
     ~NGLScene();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the initialize class is called once when the window is created and we have a valid GL context
-    /// use this to setup any default GL stuff
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The initialize class is called once when the window is created and we have a valid GL context
     void initializeGL();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this is called everytime we want to draw the scene
-    //----------------------------------------------------------------------------------------------------------------------
+    //! This is called everytime we want to draw the scene
     void paintGL();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this is called everytime we want to draw the scene
-    //----------------------------------------------------------------------------------------------------------------------
-    // Qt 5.5.1 must have this implemented and uses it
+    //! This is called everytime we want to draw the scene
     void resizeGL(QResizeEvent *_event);
-    // Qt 5.x uses this instead! http://doc.qt.io/qt-5/qopenglwindow.html#resizeGL
+
     void resizeGL(int _w, int _h);
-
-    void resetSim();
-
+    //! Steps the animation
     void stepAnimation();
-
+    //! Renders the text to screen dependant on whether the player is alive
     void renderTextToScreen();
-
+    //! Draws the physics shapes
     void drawPhysicsShapes();
-
-    void removePlayer();
-
+    //! Adds the stairs on which the shapes fall down
+    /*!
+     * \brief addStairs
+     * \param _floorHeight Height of the player's platform
+     */
     void addStairs(float _floorHeight);
-
+    //! Adds the physics shapes to the game
     void addPhysicsShape();
+
+    void togglePauseSim();
+
+    int getConfigSetting(std::ifstream *_settings);
 
 private:
     float m_x;
     float m_y;
     float m_z;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief used to store the x rotation mouse value
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Used to store the x rotation mouse value
     int m_spinXFace;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief used to store the y rotation mouse value
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Used to store the y rotation mouse value
     int m_spinYFace;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief flag to indicate if the mouse button is pressed when dragging
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Flag to indicate if the mouse button is pressed when dragging
     bool m_rotate;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief flag to indicate if the Right mouse button is pressed when dragging
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Flag to indicate if the Right mouse button is pressed when dragging
     bool m_translate;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the previous x mouse value
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The previous x mouse value
     int m_origX;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the previous y mouse value
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The previous y mouse value
     int m_origY;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the previous x mouse value for Position changes
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The previous x mouse value for Position changes
     int m_origXPos;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the previous y mouse value for Position changes
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The previous y mouse value for Position changes
     int m_origYPos;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief window width
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Window width
     int m_width;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief window height
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Window height
     int m_height;
-
+    //! Small text used for when the player is alive
     ngl::Text *m_text;
+    //! Large text used for when the player is killed
     ngl::Text *m_largeText;
-
+    //! Transformation matrix of the body
     ngl::Mat4 m_bodyTransform;
-
+    //! The player
     std::unique_ptr<Player> m_player;
-
+    //! Timer ID for each update
     int m_updateTimerID;
+    //! Timer ID for dropping shapes
     int m_shapeDropTimerID;
-
+    //! The rate at which the shapes are dropped
     int m_shapeDropRate;
-
+    //! The initial drop rate value
+    int m_initialDropRate;
+    //! The minimum drop rate value
+    int m_minDropRate; //can't go too low because it'll crash - 128 crashes
+    //! The initial level that the player starts on
+    int m_level;
+    //! Player's floor platform height
     float m_floorHeight;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief used to store the global mouse transforms
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Used to store the global mouse transforms
     ngl::Mat4 m_mouseGlobalTX;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief Our Camera
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The Camera
     ngl::Camera m_cam;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief the model position for mouse movement
-    //----------------------------------------------------------------------------------------------------------------------
+    //! The model position for mouse movement
     ngl::Vec3 m_modelPos;
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief method to load transform matrices to the shader
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Method to load transform matrices to the shader
     void loadMatricesToShader();
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief Qt Event called when a key is pressed
-    /// @param [in] _event the Qt event to query for size etc
-    //----------------------------------------------------------------------------------------------------------------------
+    //! Qt Event called when a key is pressed
+    //! @param [in] _event the Qt event to query for size etc
     void keyPressEvent(QKeyEvent *_event);
-
+    //! Qt Event called when a key is released
     void keyReleaseEvent(QKeyEvent *_event);
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this method is called every time a mouse is moved
-    /// @param _event the Qt Event structure
-    //----------------------------------------------------------------------------------------------------------------------
+    //! This method is called every time a mouse is moved
+    //! @param _event the Qt Event structure
     void mouseMoveEvent (QMouseEvent * _event );
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this method is called everytime the mouse button is pressed
-    /// inherited from QObject and overridden here.
-    /// @param _event the Qt Event structure
-    //----------------------------------------------------------------------------------------------------------------------
+    //! This method is called everytime the mouse button is pressed
+    //! Inherited from QObject and overridden here.
+    //! @param _event the Qt Event structure
     void mousePressEvent ( QMouseEvent *_event);
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this method is called everytime the mouse button is released
-    /// inherited from QObject and overridden here.
-    /// @param _event the Qt Event structure
-    //----------------------------------------------------------------------------------------------------------------------
+    //! This method is called everytime the mouse button is released
+    //! Inherited from QObject and overridden here.
+    //! @param _event the Qt Event structure
     void mouseReleaseEvent ( QMouseEvent *_event );
-
-    //----------------------------------------------------------------------------------------------------------------------
-    /// @brief this method is called everytime the mouse wheel is moved
-    /// inherited from QObject and overridden here.
-    /// @param _event the Qt Event structure
-    //----------------------------------------------------------------------------------------------------------------------
+    //! This method is called everytime the mouse wheel is moved
+    //! Inherited from QObject and overridden here.
+    //! @param _event The Qt Event structure
     void wheelEvent( QWheelEvent *_event);
-
+    //! Animation within the window
     bool m_animate;
-
+    //! Timer event
     void timerEvent(QTimerEvent *);
-
+    //! Time variable
     QTime m_time;
-
+    //! Player's score in seconds
     int m_score;
 };
 
-
-
-#endif
+#endif // NGLSCENE_H__

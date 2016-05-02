@@ -43,11 +43,13 @@ int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Rea
   //motionstate provides interpolation capabilities
   btDefaultMotionState *motionState = new btDefaultMotionState(startTransform);
   btRigidBody::btRigidBodyConstructionInfo rigidBodyCI(_mass, motionState, colShape, inertia);
+  // giving the sphere restitution and friction
   rigidBodyCI.m_friction = 0.25f;
   rigidBodyCI.m_restitution = 0.75f;
 
   btRigidBody* rigidBody = new btRigidBody(rigidBodyCI);
   rigidBody->applyImpulse(btVector3(0,3,0), btVector3(0,1,0));
+  // rolling friction ensures that the spheres do not continue rolling forever
   rigidBody->setRollingFriction(btScalar(0.75f));
   rigidBody->setDamping(0.1,0.1);
   if(_isStatic)
@@ -60,6 +62,7 @@ int Physics::addSphere(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Rea
 
 int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
+  //creating dynamic rigid body - cone
   btCollisionShape* colShape = new btConeShape(btScalar(_rad),btScalar(_height));
   btTransform startTransform;
   startTransform.setIdentity();
@@ -78,17 +81,20 @@ int Physics::addCone(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real 
   rigidBody->setDamping(0.1,0.1);
   rigidBody->setRollingFriction(0.25f);
 
+  // if the user would like the shapes to be static, a collision flag is set
   if(_isStatic)
   {
     rigidBody->setCollisionFlags(btCollisionObject::CollisionFlags::CF_STATIC_OBJECT);
   }
 
+  // adding the rigid body to the dynamics world
   int index = addRigidBodyToDW(rigidBody);
   return index;
 }
 
 int Physics::addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 _size)
 {
+  //creating dynamic rigid body - cube
   btCollisionShape* colShape = new btBoxShape(btVector3(_size.m_x,_size.m_y,_size.m_z));
 
   btTransform startTransform;
@@ -116,6 +122,7 @@ int Physics::addCube(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Vec3 
 
 int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Real _rad, ngl::Real _height)
 {
+  //creating dynamic rigid body - capsule
   btCollisionShape* colShape = new btCapsuleShape(btScalar(_rad),btScalar(_height));
 
   btTransform startTransform;
@@ -144,6 +151,7 @@ int Physics::addCapsule(ngl::Vec3 _pos, ngl::Real _mass, bool _isStatic, ngl::Re
 
 int Physics::addGroundPlane(ngl::Real _yPos)
 {
+  //creating dynamic rigid body - ground plane
   m_groundShape.reset(new btStaticPlaneShape(btVector3(0,1,0),_yPos));
 
   btTransform groundTransform;
@@ -164,23 +172,16 @@ int Physics::addGroundPlane(ngl::Real _yPos)
 
 int Physics::getCollisionShape(unsigned int _index) const
 {
+  // retrieves the collision shape type
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btCollisionShape* collisionShape = obj->getCollisionShape();
 
   return collisionShape->getShapeType();
 }
 
-int Physics::isStatic(unsigned int _index)
-{
-  btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-
-  btRigidBody* rigidBody = btRigidBody::upcast(obj);
-
-  return rigidBody->isStaticObject();
-}
-
 void Physics::push(unsigned int _index, ngl::Vec3 _dir)
 {
+  // applies central impulse in order to move the rigid body
   btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
   _rigidBody->activate(true);
@@ -190,16 +191,9 @@ void Physics::push(unsigned int _index, ngl::Vec3 _dir)
 
 }
 
-void Physics::moveToOrigin(unsigned int _index, ngl::Vec3 _pos)
-{
-  btCollisionObject* _obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
-  btRigidBody* _rigidBody = btRigidBody::upcast(_obj);
-  _rigidBody->activate(true);
-  _rigidBody->translate(btVector3(-_pos.m_x,-_pos.m_y,-_pos.m_z));
-}
-
 ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
 {
+  // gets the transformation matrix
   btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[_index];
   btRigidBody* rigidBody = btRigidBody::upcast(obj);
   if(rigidBody && rigidBody->getMotionState())
@@ -209,6 +203,7 @@ ngl::Mat4 Physics::getTransformMatrix(unsigned int _index)
     float matrix[16];
     transform.getOpenGLMatrix(matrix);
 
+    // uses european matrix standard
     return ngl::Mat4(matrix[0], matrix[1], matrix[2], matrix[3],
                      matrix[4], matrix[5], matrix[6], matrix[7],
                      matrix[8], matrix[9], matrix[10], matrix[11],
@@ -227,6 +222,7 @@ void Physics::step(float _time, float _step)
 
 int Physics::addRigidBodyToDW(btRigidBody* _rigidBody)
 {
+  // adds the rigid bodies to the dynamics world
   int bodyIndex =  m_dynamicsWorld->getNumCollisionObjects();
   m_dynamicsWorld->addRigidBody(_rigidBody);
   return bodyIndex;

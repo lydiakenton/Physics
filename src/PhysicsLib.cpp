@@ -19,13 +19,16 @@ void PhysicsLib::init()
   prim->createCone("cone",1.0f,1.0f,20.0f,20.0f);
   prim->createCapsule("capsule",1.0f,1.0f,40.0f);
 
+  // set default material to black plastic
   m_currentMat = ngl::STDMAT::BLACKPLASTIC;
+  // default gravity is that of Earth
   setGravity(0,-9.81,0);
   addGroundPlane(0);
 }
 
 void PhysicsLib::setGravity(float _x, float _y, float _z)
 {
+  // user may set their own gravity if wanted
   m_physics.setGravity(_x,_y,_z);
 }
 
@@ -37,6 +40,7 @@ void PhysicsLib::addGroundPlane(ngl::Real _yPos)
 
 int PhysicsLib::addCone(ngl::Vec3 _pos, bool _static, ngl::Real _rad, ngl::Real _height)
 {
+  // mass of each shape is calculated using their volume
   ngl::Real mass = 0;
   if(!_static)
   {
@@ -124,22 +128,6 @@ void PhysicsLib::push(int _shapeIndex, ngl::Vec3 _dir)
 {
   return m_shapes[_shapeIndex]->push(_dir);
 }
-
-//void PhysicsLib::removeShape(int _shapeIndex)
-//{
-//  m_physics.deleteBody(m_shapes[_shapeIndex]->getShapeID());
-//  m_shapes.erase(m_shapes.begin()+_shapeIndex);
-//  for(int i=_shapeIndex; i<m_shapes.size(); i++)
-//  {
-//    m_shapes[i]->decrementID();
-//  }
-//}
-
-//reset()
-//{
-  //m_physics = Physics();
-  //m_shapes.resize(0);
-//}
 
 
 
